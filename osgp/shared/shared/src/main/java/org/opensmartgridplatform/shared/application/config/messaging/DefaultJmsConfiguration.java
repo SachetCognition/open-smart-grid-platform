@@ -9,10 +9,14 @@ import org.springframework.beans.factory.annotation.Value;
 /** This class provides the default configuration properties used for JMS messaging. */
 public class DefaultJmsConfiguration implements JmsConfiguration {
 
-  @Value("${jms.default.broker.type:ACTIVE_MQ}")
+  // Default broker type is ARTEMIS. For rollback to ActiveMQ Classic set
+  // jms.default.broker.type=ACTIVE_MQ (and use a classic failover: broker url).
+  @Value("${jms.default.broker.type:ARTEMIS}")
   private String jmsDefaultBrokerType;
 
-  @Value("${jms.default.broker.url:failover:(tcp://localhost:61616)}")
+  // Artemis core broker url (default). ActiveMQ Classic rollback alternative:
+  // failover:(tcp://localhost:61616) or failover:(ssl://localhost:61617)
+  @Value("${jms.default.broker.url:tcp://localhost:61616}")
   private String jmsDefaultBrokerUrl;
 
   @Value("${jms.default.queue:osgp-default}")
@@ -51,10 +55,11 @@ public class DefaultJmsConfiguration implements JmsConfiguration {
   @Value("${jms.default.connection.send.timeout:0}")
   private int jmsDefaultConnectionSendTimeout;
 
-  @Value("${jms.default.trust.all.packages:true}")
+  @Value("${jms.default.trust.all.packages:false}")
   private boolean jmsDefaultTrustAllPackages;
 
-  @Value("${jms.default.trusted.packages:org.opensmartgridplatform,org.joda.time,java.util}")
+  @Value(
+      "${jms.default.trusted.packages:org.opensmartgridplatform,org.joda.time,java.util,java.lang,java.time,java.net,java.security,com.google.protobuf}")
   private String jmsDefaultTrustedPackages;
 
   @Value("${jms.default.broker.client.key.store:/etc/osp/activemq/client.ks}")

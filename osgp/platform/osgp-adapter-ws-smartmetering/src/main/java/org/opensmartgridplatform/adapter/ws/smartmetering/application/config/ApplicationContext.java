@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
@@ -36,7 +37,14 @@ import org.springframework.validation.beanvalidation.MethodValidationPostProcess
       "org.opensmartgridplatform.adapter.ws.shared.services",
       "org.opensmartgridplatform.adapter.ws.mapping",
       "org.opensmartgridplatform.shared.application.config"
-    })
+    },
+    // The REST facade beans (controllers, MVC and OpenAPI configuration) live in the child
+    // application context of the REST DispatcherServlet, so they are excluded from the shared root
+    // context to avoid duplicate registration and activating Spring MVC in the root context.
+    excludeFilters =
+        @ComponentScan.Filter(
+            type = FilterType.REGEX,
+            pattern = "org\\.opensmartgridplatform\\.adapter\\.ws\\.smartmetering\\.rest\\..*"))
 @EnableTransactionManagement()
 @ImportResource("classpath:applicationContext.xml")
 @Import({

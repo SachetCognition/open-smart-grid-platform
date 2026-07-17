@@ -1,14 +1,27 @@
-FROM tomcat:10.1-jre17-temurin-noble
+# SPDX-FileCopyrightText: Contributors to the GXF project
+#
+# SPDX-License-Identifier: Apache-2.0
 
-RUN rm -rf /usr/local/tomcat/webapps.dist
+# WS6: osgp-adapter-ws-tariffswitching now ships as a self-contained, executable Spring Boot WAR
+# with an embedded servlet container instead of a WAR deployed into Tomcat. The SOAP endpoints are
+# served on port 8080; Spring Boot Actuator (health probes / metrics) runs on management port 8081.
+FROM eclipse-temurin:17-jre
 
-# Enable the use of system environment variables in Tomcat configuration files.
-RUN echo "org.apache.tomcat.util.digester.PROPERTY_SOURCE=org.apache.tomcat.util.digester.EnvironmentPropertySource" >> /usr/local/tomcat/conf/catalina.properties
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /var/log/osp /etc/osgp
 
-RUN mkdir -p /var/log/osp && \
-    rm -rf /usr/local/tomcat/webapps/* && \
-    chmod 755 /usr/local/tomcat/webapps /var/log/osp && \
-    mkdir -p /usr/local/tomcat/webapps/probe/ && \
-    touch /usr/local/tomcat/webapps/probe/probe.txt
+WORKDIR /app
+COPY target/osgp-adapter-ws-tariffswitching-*.war app.war
 
-COPY target/gxf /usr/local/tomcat/webapps/
+EXPOSE 8080 8081
+
+# Health probe now uses the Spring Boot Actuator readiness endpoint (management port 8081) instead
+# of the hand-made probe.txt file that used to be served by Tomcat.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
+    CMD curl -fsS http://localhost:8081/actuator/health/readiness || exit 1
+
+# Honour $JAVA_OPTS (memory/GC settings from the deployment) and open java.base/java.lang for the
+# Orika object mapper's runtime bytecode generation (required on JDK 17+).
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS --add-opens java.base/java.lang=ALL-UNNAMED -jar /app/app.war"]

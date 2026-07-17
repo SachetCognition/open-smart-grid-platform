@@ -5,13 +5,12 @@
 package org.opensmartgridplatform.adapter.protocol.oslp.elster.application.config.messaging;
 
 import jakarta.jms.ConnectionFactory;
+import jakarta.jms.Destination;
 import jakarta.jms.MessageListener;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.UUID;
 import javax.net.ssl.SSLException;
-import org.apache.activemq.command.ActiveMQDestination;
-import org.apache.activemq.command.ActiveMQQueue;
 import org.opensmartgridplatform.shared.application.config.messaging.DefaultJmsConfiguration;
 import org.opensmartgridplatform.shared.application.config.messaging.JmsConfigurationFactory;
 import org.slf4j.Logger;
@@ -69,11 +68,11 @@ public class InboundSigningServerResponsesMessagingConfig {
    * instance.
    */
   @Bean
-  public ActiveMQDestination replyToQueue() {
+  public Destination replyToQueue() {
     final String queueName =
         this.createUniqueQueueName(PROPERTY_NAME_JMS_SIGNING_SERVER_RESPONSES_QUEUE);
     LOGGER.info("------> replyToQueue: {}", queueName);
-    return new ActiveMQQueue(queueName);
+    return this.jmsConfigurationFactory.getQueue(queueName);
   }
 
   // Response queue name helper function.

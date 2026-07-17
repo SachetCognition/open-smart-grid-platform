@@ -1,0 +1,14 @@
+# SPDX-FileCopyrightText: Contributors to the GXF project
+#
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: v2
+name: gxf
+description: >-
+  WS6 in-repo, declarative deployment for the Grid eXchange Fabric (GXF / OSGP) platform. Mirrors the
+  external OSGP/gxf-gitops charts so that orchestration is versioned together with the code. Deploys
+  Postgres, an Artemis JMS broker, the Spring Boot converted platform services (osgp-core, a ws
+  adapter and a domain adapter) and a protocol adapter with its device simulator.
+type: application
+version: 0.1.0
+appVersion: "6.37.0-SNAPSHOT"

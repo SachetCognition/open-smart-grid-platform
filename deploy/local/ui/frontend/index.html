@@ -1,0 +1,99 @@
+<!--
+SPDX-FileCopyrightText: Copyright Contributors to the GXF project
+SPDX-License-Identifier: Apache-2.0
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GXF · Open Smart Grid Platform — Journeys</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">◆</span>
+      <div>
+        <h1>Open Smart Grid Platform</h1>
+        <p>Modernized local stack · Artemis JMS · REST + SOAP · Spring Boot Actuator</p>
+      </div>
+    </div>
+    <div id="health-pills" class="health-pills"></div>
+  </header>
+
+  <main>
+    <section class="grid">
+      <!-- REST journey -->
+      <article class="card">
+        <div class="card-head">
+          <h2>Smart Metering · GetActualMeterReads</h2>
+          <span class="badge badge-new">REST / JSON · WS3</span>
+        </div>
+        <p class="muted">Async pattern over the new OpenAPI facade: enqueue → correlationUid → poll result.</p>
+        <label>Device identification
+          <input id="rest-device" value="TEST1024000000001" />
+        </label>
+        <div class="row">
+          <button id="rest-enqueue" class="primary">1 · Enqueue (POST)</button>
+          <button id="rest-poll" class="ghost" disabled>2 · Fetch result (GET)</button>
+        </div>
+        <div class="kv"><span>correlationUid</span><code id="rest-cid">—</code></div>
+        <pre id="rest-out" class="out">Awaiting request…</pre>
+      </article>
+
+      <!-- SOAP SetLight journey -->
+      <article class="card">
+        <div class="card-head">
+          <h2>Public Lighting · SetLight</h2>
+          <span class="badge badge-soap">SOAP · mTLS</span>
+        </div>
+        <p class="muted">Existing SOAP endpoint, preserved unchanged (additive modernization).</p>
+        <label>Device identification
+          <input id="pl-device" value="TEST1024000000001" />
+        </label>
+        <div class="row">
+          <label class="inline">Index <input id="pl-index" type="number" value="1" min="1" max="6" /></label>
+          <label class="inline">On
+            <select id="pl-on"><option value="true">true</option><option value="false">false</option></select>
+          </label>
+          <label class="inline">Dim <input id="pl-dim" type="number" value="" placeholder="0-100" min="0" max="100" /></label>
+        </div>
+        <button id="pl-send" class="primary">Send SetLight</button>
+        <pre id="pl-out" class="out">Awaiting request…</pre>
+      </article>
+
+      <!-- SOAP GetActualMeterReads journey -->
+      <article class="card">
+        <div class="card-head">
+          <h2>Smart Metering · GetActualMeterReads</h2>
+          <span class="badge badge-soap">SOAP · mTLS</span>
+        </div>
+        <p class="muted">The original SOAP path, unchanged and running side-by-side with REST.</p>
+        <label>Device identification
+          <input id="sm-device" value="TEST1024000000001" />
+        </label>
+        <button id="sm-send" class="primary">Send ActualMeterReads (SOAP)</button>
+        <pre id="sm-out" class="out">Awaiting request…</pre>
+      </article>
+
+      <!-- Docs + platform -->
+      <article class="card">
+        <div class="card-head">
+          <h2>API Documentation &amp; Health</h2>
+          <span class="badge">Actuator · OpenAPI</span>
+        </div>
+        <p class="muted">Live OpenAPI docs for the REST facade and Spring Boot Actuator health for the cloud-native services.</p>
+        <div class="row">
+          <a class="ghost linkbtn" id="swagger-link" target="_blank" rel="noopener">Open Swagger UI ↗</a>
+          <a class="ghost linkbtn" id="apidocs-link" target="_blank" rel="noopener">Open /v3/api-docs ↗</a>
+        </div>
+        <div id="health-table" class="health-table"></div>
+      </article>
+    </section>
+  </main>
+
+  <footer><span id="cfg"></span></footer>
+  <script src="/app.js"></script>
+</body>
+</html>

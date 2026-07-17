@@ -15,6 +15,7 @@ import static org.opensmartgridplatform.shared.application.config.messaging.JmsP
 import static org.opensmartgridplatform.shared.application.config.messaging.JmsPropertyNames.PROPERTY_NAME_CONNECTION_POOL_TIME_BETWEEN_EXPIRATION_CHECK_MILLIS;
 import static org.opensmartgridplatform.shared.application.config.messaging.JmsPropertyNames.PROPERTY_NAME_DELIVERY_PERSISTENT;
 import static org.opensmartgridplatform.shared.application.config.messaging.JmsPropertyNames.PROPERTY_NAME_EXPLICIT_QOS_ENABLED;
+import static org.opensmartgridplatform.shared.application.config.messaging.JmsPropertyNames.PROPERTY_NAME_MAXIMUM_REDELIVERIES;
 import static org.opensmartgridplatform.shared.application.config.messaging.JmsPropertyNames.PROPERTY_NAME_MAX_CONCURRENT_CONSUMERS;
 import static org.opensmartgridplatform.shared.application.config.messaging.JmsPropertyNames.PROPERTY_NAME_QUEUE;
 import static org.opensmartgridplatform.shared.application.config.messaging.JmsPropertyNames.PROPERTY_NAME_TIME_TO_LIVE;
@@ -111,6 +112,16 @@ public class JmsConfigurationFactory {
 
   public RedeliveryPolicy getRedeliveryPolicy() {
     return this.jmsBroker.getRedeliveryPolicy();
+  }
+
+  /**
+   * Broker-agnostic accessor for the configured maximum number of redeliveries. Unlike {@link
+   * #getRedeliveryPolicy()} (an ActiveMQ Classic construct that Artemis configures in broker.xml),
+   * this value is used for application-level redelivery counting and is valid for every broker
+   * type.
+   */
+  public int getMaxRedeliveries() {
+    return this.propertyReader.get(PROPERTY_NAME_MAXIMUM_REDELIVERIES, int.class);
   }
 
   private ConnectionFactory initConnectionFactory() throws SSLException {

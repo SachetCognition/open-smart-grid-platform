@@ -57,7 +57,7 @@ public class InboundOsgpCoreRequestsMessagingConfig {
 
   @Bean
   public int maxRedeliveriesForIec61850Requests() {
-    return this.jmsConfigurationFactory.getRedeliveryPolicy().getMaximumRedeliveries();
+    return this.jmsConfigurationFactory.getMaxRedeliveries();
   }
 
   @Bean

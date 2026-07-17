@@ -1,0 +1,61 @@
+# SPDX-FileCopyrightText: Contributors to the GXF project
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# WS6: Cloud-native configuration for the osgp-adapter-ws-tariffswitching Spring Boot application.
+# The Tomcat context.xml JNDI <Environment> entries that pointed the application at its external
+# configuration files have been replaced by the properties below. In Kubernetes the actual
+# configuration content is supplied through a ConfigMap (mounted global.properties) and a Secret
+# (database credentials) - see deploy/. Values can be overridden with environment variables.
+
+# The Spring-WS SOAP MessageDispatcherServlet is mapped to '/*' on this port, so the Actuator
+# endpoints are exposed on a dedicated management port to avoid a mapping clash.
+server:
+  port: 8080
+  servlet:
+    context-path: /osgp-adapter-ws-tariffswitching
+
+spring:
+  application:
+    name: osgp-adapter-ws-tariffswitching
+  # The hand-rolled WebServiceConfig and Spring-WS's DelegatingWsConfiguration both contribute a
+  # defaultMethodEndpointAdapter bean; overriding was permitted under Tomcat, so keep it enabled.
+  main:
+    allow-bean-definition-overriding: true
+  config:
+    import:
+      - optional:file:/etc/osgp/global.properties
+      - optional:file:/etc/osgp/osgp-adapter-ws-tariffswitching.properties
+
+# Location of the file-system config files referenced by the @PropertySource annotations. These
+# used to be provided as Tomcat JNDI Environment entries in context.xml.
+osgp/Global/config: /etc/osgp/global.properties
+osgp/AdapterWsTariffSwitching/config: /etc/osgp/osgp-adapter-ws-tariffswitching.properties
+
+logging:
+  config: classpath:logback-config.xml
+
+# Spring Boot Actuator on a dedicated management port: Kubernetes-style liveness and readiness
+# probes at /actuator/health/liveness and /actuator/health/readiness, plus a Prometheus endpoint.
+management:
+  server:
+    port: 8081
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true

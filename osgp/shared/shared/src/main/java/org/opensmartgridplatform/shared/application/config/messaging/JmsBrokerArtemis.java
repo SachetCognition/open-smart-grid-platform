@@ -13,6 +13,8 @@ import static org.opensmartgridplatform.shared.application.config.messaging.JmsP
 import static org.opensmartgridplatform.shared.application.config.messaging.JmsPropertyNames.PROPERTY_NAME_BROKER_USERNAME;
 import static org.opensmartgridplatform.shared.application.config.messaging.JmsPropertyNames.PROPERTY_NAME_CONNECTION_QUEUE_CONSUMER_WINDOW_SIZE;
 import static org.opensmartgridplatform.shared.application.config.messaging.JmsPropertyNames.PROPERTY_NAME_MAX_THREAD_POOL_SIZE;
+import static org.opensmartgridplatform.shared.application.config.messaging.JmsPropertyNames.PROPERTY_NAME_TRUSTED_PACKAGES;
+import static org.opensmartgridplatform.shared.application.config.messaging.JmsPropertyNames.PROPERTY_NAME_TRUST_ALL_PACKAGES;
 
 import jakarta.jms.Destination;
 import javax.net.ssl.SSLException;
@@ -58,6 +60,16 @@ public class JmsBrokerArtemis implements JmsBroker {
 
     activeMQConnectionFactory.setConsumerWindowSize(
         this.propertyReader.get(PROPERTY_NAME_CONNECTION_QUEUE_CONSUMER_WINDOW_SIZE, int.class));
+
+    // Guard against unbounded ObjectMessage deserialization. When trustAllPackages is
+    // disabled, restrict deserialization to the comma-separated trusted packages whitelist,
+    // mirroring the ActiveMQ Classic setTrustedPackages(...) behaviour.
+    final boolean trustAllPackages =
+        this.propertyReader.get(PROPERTY_NAME_TRUST_ALL_PACKAGES, boolean.class);
+    if (!trustAllPackages) {
+      activeMQConnectionFactory.setDeserializationWhiteList(
+          this.propertyReader.get(PROPERTY_NAME_TRUSTED_PACKAGES, String.class));
+    }
 
     // Thread management
     activeMQConnectionFactory.setThreadPoolMaxSize(

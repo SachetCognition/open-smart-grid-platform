@@ -1,0 +1,92 @@
+{{/*
+SPDX-FileCopyrightText: Contributors to the GXF project
+
+SPDX-License-Identifier: Apache-2.0
+*/}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-postgres-init
+  labels:
+    {{- include "gxf.labels" . | nindent 4 }}
+data:
+  init.sql: |
+    {{- range .Values.database.databases }}
+    CREATE DATABASE {{ . }};
+    {{- end }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-postgres-data
+  labels:
+    {{- include "gxf.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.postgres.storage }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gxf-postgres
+  labels:
+    app: gxf-postgres
+    {{- include "gxf.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gxf-postgres
+  template:
+    metadata:
+      labels:
+        app: gxf-postgres
+    spec:
+      containers:
+        - name: postgres
+          image: {{ .Values.postgres.image }}
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: {{ .Values.database.username | quote }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-db-credentials
+                  key: DB_PASSWORD
+            - name: POSTGRES_DB
+              value: {{ index .Values.database.databases 0 | quote }}
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "{{ .Values.database.username }}"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+            - name: init
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-postgres-data
+        - name: init
+          configMap:
+            name: {{ .Release.Name }}-postgres-init
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gxf-postgres
+  labels:
+    {{- include "gxf.labels" . | nindent 4 }}
+spec:
+  selector:
+    app: gxf-postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
