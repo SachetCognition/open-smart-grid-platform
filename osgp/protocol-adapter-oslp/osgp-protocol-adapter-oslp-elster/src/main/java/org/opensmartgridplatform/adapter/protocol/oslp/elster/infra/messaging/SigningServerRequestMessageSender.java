@@ -4,11 +4,11 @@
 
 package org.opensmartgridplatform.adapter.protocol.oslp.elster.infra.messaging;
 
+import jakarta.jms.Destination;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
 import jakarta.jms.ObjectMessage;
 import jakarta.jms.Session;
-import org.apache.activemq.command.ActiveMQDestination;
 import org.opensmartgridplatform.shared.infra.jms.Constants;
 import org.opensmartgridplatform.shared.infra.jms.RequestMessage;
 import org.opensmartgridplatform.shared.wsheaderattribute.priority.MessagePriorityEnum;
@@ -30,7 +30,7 @@ public class SigningServerRequestMessageSender {
   @Qualifier("protocolOslpOutboundSigningServerRequestsJmsTemplate")
   private JmsTemplate jmsTemplate;
 
-  @Autowired private ActiveMQDestination replyToQueue;
+  @Autowired private Destination replyToQueue;
 
   public void send(final RequestMessage requestMessage, final String messageType) {
     this.send(requestMessage, messageType, MessagePriorityEnum.DEFAULT.getPriority());
