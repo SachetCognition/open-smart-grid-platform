@@ -11,10 +11,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 import ma.glasnost.orika.MapperFacade;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -150,8 +150,10 @@ class SetClockConfigurationCommandExecutorTest {
 
   private SetClockConfigurationRequestDto createRequestDto() {
     final short timeZoneOffset = 60;
-    final DateTime daylightSavingsBegin = new DateTime(2023, 3, 26, 1, 0, 0, DateTimeZone.UTC);
-    final DateTime daylightSavingsEnd = new DateTime(2023, 3, 26, 1, 0, 0, DateTimeZone.UTC);
+    final ZonedDateTime daylightSavingsBegin =
+        ZonedDateTime.of(2023, 3, 26, 1, 0, 0, 0, ZoneOffset.UTC);
+    final ZonedDateTime daylightSavingsEnd =
+        ZonedDateTime.of(2023, 3, 26, 1, 0, 0, 0, ZoneOffset.UTC);
     final boolean daylightSavingsEnabled = true;
 
     return new SetClockConfigurationRequestDto(

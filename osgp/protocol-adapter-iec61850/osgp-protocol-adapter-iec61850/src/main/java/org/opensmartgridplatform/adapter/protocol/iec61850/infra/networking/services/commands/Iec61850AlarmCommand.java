@@ -5,10 +5,10 @@
 package org.opensmartgridplatform.adapter.protocol.iec61850.infra.networking.services.commands;
 
 import com.beanit.openiec61850.Fc;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.opensmartgridplatform.adapter.protocol.iec61850.device.rtu.RtuReadCommand;
 import org.opensmartgridplatform.adapter.protocol.iec61850.exceptions.NodeException;
 import org.opensmartgridplatform.adapter.protocol.iec61850.infra.networking.Iec61850Client;
@@ -69,7 +69,8 @@ public class Iec61850AlarmCommand implements RtuReadCommand<MeasurementDto> {
         1,
         map.get(this.alarmIndex).getDescription(),
         QualityConverter.toShort(containingNode.getQuality(SubDataAttribute.QUALITY).getValue()),
-        new DateTime(containingNode.getDate(SubDataAttribute.TIME), DateTimeZone.UTC),
+        ZonedDateTime.ofInstant(
+            containingNode.getDate(SubDataAttribute.TIME).toInstant(), ZoneOffset.UTC),
         this.translateStateValue(containingNode));
   }
 

@@ -4,7 +4,7 @@
 
 package org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.monitoring;
 
-import static org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.utils.DlmsDateTimeConverter.toDateTime;
+import static org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.utils.DlmsDateTimeConverter.toZonedDateTime;
 import static org.opensmartgridplatform.dlms.objectconfig.DlmsObjectType.DEFINABLE_LOAD_PROFILE;
 import static org.opensmartgridplatform.dlms.objectconfig.DlmsObjectType.POWER_QUALITY_PROFILE_1;
 import static org.opensmartgridplatform.dlms.objectconfig.DlmsObjectType.POWER_QUALITY_PROFILE_2;
@@ -12,6 +12,7 @@ import static org.opensmartgridplatform.dlms.objectconfig.DlmsObjectType.POWER_Q
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.Getter;
-import org.joda.time.DateTime;
 import org.openmuc.jdlms.AttributeAddress;
 import org.openmuc.jdlms.GetResult;
 import org.openmuc.jdlms.ObisCode;
@@ -127,8 +127,9 @@ public abstract class AbstractGetPowerQualityProfileHandler {
       final List<CosemObject> configObjects = entry.getValue();
 
       final ObisCode obisCode = new ObisCode(profile.getObis());
-      final DateTime beginDateTime = toDateTime(request.getBeginDate(), device.getTimezone());
-      final DateTime endDateTime = toDateTime(request.getEndDate(), device.getTimezone());
+      final ZonedDateTime beginDateTime =
+          toZonedDateTime(request.getBeginDate(), device.getTimezone());
+      final ZonedDateTime endDateTime = toZonedDateTime(request.getEndDate(), device.getTimezone());
 
       // All values that can be selected based on the info in the meter
       final List<GetResult> captureObjects = this.retrieveCaptureObjects(conn, device, obisCode);
@@ -264,8 +265,8 @@ public abstract class AbstractGetPowerQualityProfileHandler {
       final DlmsConnectionManager conn,
       final DlmsDevice device,
       final ObisCode obisCode,
-      final DateTime beginDateTime,
-      final DateTime endDateTime,
+      final ZonedDateTime beginDateTime,
+      final ZonedDateTime endDateTime,
       final List<SelectableObject> selectableObjects)
       throws ProtocolAdapterException {
 
@@ -398,8 +399,8 @@ public abstract class AbstractGetPowerQualityProfileHandler {
   }
 
   private SelectiveAccessDescription getSelectiveAccessDescription(
-      final DateTime beginDateTime,
-      final DateTime endDateTime,
+      final ZonedDateTime beginDateTime,
+      final ZonedDateTime endDateTime,
       final DataObject selectableCaptureObjects) {
 
     /*
@@ -491,7 +492,7 @@ public abstract class AbstractGetPowerQualityProfileHandler {
       return new ProfileEntryValueDto(
           Date.from(newLocalDateTime.atZone(ZoneId.systemDefault()).toInstant()));
     } else {
-      return new ProfileEntryValueDto(cosemDateTime.asDateTime().toDate());
+      return new ProfileEntryValueDto(Date.from(cosemDateTime.asDateTime().toInstant()));
     }
   }
 

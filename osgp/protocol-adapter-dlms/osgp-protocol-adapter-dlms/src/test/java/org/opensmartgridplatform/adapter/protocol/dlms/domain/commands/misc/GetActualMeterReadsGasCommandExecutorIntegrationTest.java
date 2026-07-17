@@ -11,12 +11,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
-import org.joda.time.DateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -58,7 +59,7 @@ class GetActualMeterReadsGasCommandExecutorIntegrationTest {
 
   private static final int CHANNEL = 1;
 
-  private static final DateTime DATE_TIME = DateTime.parse("2018-12-31T23:00:00Z");
+  private static final ZonedDateTime DATE_TIME = ZonedDateTime.parse("2018-12-31T23:00:00Z");
 
   private final long VALUE = 1000L;
 
@@ -143,7 +144,7 @@ class GetActualMeterReadsGasCommandExecutorIntegrationTest {
     assertThat(requestedAttributeAddresses).hasSize(2);
 
     // Check response
-    assertThat(response.getCaptureTime()).isEqualTo(this.DATE_TIME.toDate());
+    assertThat(response.getCaptureTime()).isEqualTo(Date.from(this.DATE_TIME.toInstant()));
     this.checkValue(
         response.getConsumption(), this.SCALERS_FOR_METER_TYPES.get(mbusDeviceModelCode));
   }
@@ -162,11 +163,11 @@ class GetActualMeterReadsGasCommandExecutorIntegrationTest {
         DataObject.newDateTimeData(
             new CosemDateTime(
                 this.DATE_TIME.getYear(),
-                this.DATE_TIME.getMonthOfYear(),
+                this.DATE_TIME.getMonthValue(),
                 this.DATE_TIME.getDayOfMonth(),
-                this.DATE_TIME.getHourOfDay(),
-                this.DATE_TIME.getMinuteOfHour(),
-                this.DATE_TIME.getSecondOfMinute(),
+                this.DATE_TIME.getHour(),
+                this.DATE_TIME.getMinute(),
+                this.DATE_TIME.getSecond(),
                 0));
 
     this.connectionStub.addReturnValue(addressValue, value);

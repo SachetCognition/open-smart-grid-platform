@@ -4,6 +4,7 @@
 
 package org.opensmartgridplatform.adapter.protocol.dlms.domain.datadecoder.dlmsclassdatadecoder;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -26,6 +27,8 @@ public class TimeAndEventsClassesDecoder {
 
   private static final String ARRAY_EXPECTED_BUT_FOUND = "ARRAY expected, but found ";
   private static final String STRUCTURE_EXPECTED_BUT_FOUND = "STRUCTURE expected, but found ";
+  private static final DateTimeFormatter DATE_TIME_FORMATTER =
+      DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
   private final DlmsHelper dlmsHelper;
   private final BasicDlmsDataDecoder basicDlmsDataDecoder;
@@ -128,7 +131,7 @@ public class TimeAndEventsClassesDecoder {
             this.dlmsHelper
                 .readDateTime(fields.get(1), "read season start")
                 .asLocalDateTime()
-                .toString();
+                .format(DATE_TIME_FORMATTER);
         final String weekName = new String((byte[]) fields.get(2).getValue());
 
         return name + ": " + start + ", weekName: " + weekName;

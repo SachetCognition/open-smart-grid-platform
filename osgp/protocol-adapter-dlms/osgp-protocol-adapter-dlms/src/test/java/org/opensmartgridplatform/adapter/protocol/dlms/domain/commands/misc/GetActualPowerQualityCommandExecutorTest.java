@@ -20,13 +20,14 @@ import static org.opensmartgridplatform.dlms.objectconfig.DlmsObjectType.NUMBER_
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import org.joda.time.DateTime;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -224,7 +225,8 @@ class GetActualPowerQualityCommandExecutorTest {
   private void assertValue(final Serializable value, final int i, final CosemObject object) {
     switch (object.getClassId()) {
       case CLASS_ID_CLOCK:
-        assertThat(value).isEqualTo(DateTime.parse("2018-12-31T23:00:00Z").toDate());
+        assertThat(value)
+            .isEqualTo(Date.from(ZonedDateTime.parse("2018-12-31T23:00:00Z").toInstant()));
         break;
       case CLASS_ID_DATA:
         assertThat(value).isEqualTo(BigDecimal.valueOf(i));

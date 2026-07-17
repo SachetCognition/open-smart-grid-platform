@@ -16,7 +16,6 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.stream.Stream;
-import org.joda.time.DateTimeZone;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -162,11 +161,9 @@ class GetPeriodicMeterReadsCommandExecutorIntegrationTest {
   public void setUp() throws IOException, ObjectConfigException {
 
     final TimeZone defaultTimeZone = TimeZone.getDefault();
-    final DateTimeZone defaultDateTimeZone = DateTimeZone.getDefault();
 
     // all time based tests must use UTC time.
     TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
-    DateTimeZone.setDefault(DateTimeZone.UTC);
 
     this.initDates();
 
@@ -185,7 +182,6 @@ class GetPeriodicMeterReadsCommandExecutorIntegrationTest {
 
     // reset to original TimeZone
     TimeZone.setDefault(defaultTimeZone);
-    DateTimeZone.setDefault(defaultDateTimeZone);
   }
 
   private void initDates() {
@@ -341,10 +337,10 @@ class GetPeriodicMeterReadsCommandExecutorIntegrationTest {
 
     final DataObject from =
         this.dlmsHelper.asDataObject(
-            DlmsDateTimeConverter.toDateTime(timeFrom, device.getTimezone()));
+            DlmsDateTimeConverter.toZonedDateTime(timeFrom, device.getTimezone()));
     final DataObject to =
         this.dlmsHelper.asDataObject(
-            DlmsDateTimeConverter.toDateTime(timeTo, device.getTimezone()));
+            DlmsDateTimeConverter.toZonedDateTime(timeTo, device.getTimezone()));
 
     if (protocol.isDsmr2() || protocol.isDsmr4()) {
       if (type == PeriodTypeDto.DAILY) {

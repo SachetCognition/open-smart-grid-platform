@@ -20,7 +20,6 @@ import java.util.TreeMap;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
 import org.openmuc.jdlms.AccessResultCode;
 import org.openmuc.jdlms.AttributeAddress;
 import org.openmuc.jdlms.GetResult;
@@ -286,7 +285,7 @@ public class DlmsHelper {
   }
 
   public DataObject getAccessSelectionTimeRangeParameter(
-      final DateTime from, final DateTime to, final DataObject selectedValues) {
+      final ZonedDateTime from, final ZonedDateTime to, final DataObject selectedValues) {
 
     /*
      * Define the clock object {8,0-0:1.0.0.255,2,0} to be used as
@@ -558,39 +557,6 @@ public class DlmsHelper {
         new CosemTimeDto(hourOfDay, minuteOfHour, secondOfMinute, hundredthsOfSecond);
     final ClockStatusDto clockStatus = new ClockStatusDto(clockStatusValue);
     return new CosemDateTimeDto(date, time, deviation, clockStatus);
-  }
-
-  /**
-   * Creates a COSEM date-time object based on the given {@code dateTime}.
-   *
-   * <p>The deviation and clock status (is daylight saving active or not) are based on the zone of
-   * the given {@code dateTime}.
-   *
-   * @param dateTime a DateTime to translate into COSEM date-time format.
-   * @return a DataObject having a CosemDateTime matching the given DateTime as value.
-   */
-  public DataObject asDataObject(final DateTime dateTime) {
-
-    final CosemDate cosemDate =
-        new CosemDate(dateTime.getYear(), dateTime.getMonthOfYear(), dateTime.getDayOfMonth());
-    final CosemTime cosemTime =
-        new CosemTime(
-            dateTime.getHourOfDay(),
-            dateTime.getMinuteOfHour(),
-            dateTime.getSecondOfMinute(),
-            dateTime.getMillisOfSecond() / 10);
-    final int deviation =
-        -(dateTime.getZone().getOffset(dateTime.getMillis()) / MILLISECONDS_PER_MINUTE);
-    final ClockStatus[] clockStatusBits;
-    if (dateTime.getZone().isStandardOffset(dateTime.getMillis())) {
-      clockStatusBits = new ClockStatus[0];
-    } else {
-      clockStatusBits = new ClockStatus[1];
-      clockStatusBits[0] = ClockStatus.DAYLIGHT_SAVING_ACTIVE;
-    }
-    final CosemDateTime cosemDateTime =
-        new CosemDateTime(cosemDate, cosemTime, deviation, clockStatusBits);
-    return DataObject.newDateTimeData(cosemDateTime);
   }
 
   /**

@@ -9,11 +9,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.joda.time.DateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -63,7 +63,7 @@ class EventServiceTest {
   void testUnknownEventIsMappedToUnknownEvent() throws FunctionalException {
     final int unknownEventCode = 666;
     final EventDto unknownEventDto =
-        new EventDto(new DateTime(), unknownEventCode, 0, "AUXILIARY_EVENT_LOG");
+        new EventDto(ZonedDateTime.now(), unknownEventCode, 0, "AUXILIARY_EVENT_LOG");
 
     final ArrayList<EventDto> events = new ArrayList<>();
     events.add(unknownEventDto);
@@ -130,7 +130,7 @@ class EventServiceTest {
     when(protocolInfo.getProtocol()).thenReturn(protocol);
     when(this.smartMeter.getProtocolInfo()).thenReturn(protocolInfo);
 
-    final EventDto event = new EventDto(new DateTime(), eventCode, 2, "STANDARD_EVENT_LOG");
+    final EventDto event = new EventDto(ZonedDateTime.now(), eventCode, 2, "STANDARD_EVENT_LOG");
     final ArrayList<EventDto> events = new ArrayList<>();
     events.add(event);
     final EventMessageDataResponseDto responseDto = new EventMessageDataResponseDto(events);

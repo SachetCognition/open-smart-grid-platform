@@ -10,13 +10,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openmuc.jdlms.datatypes.DataObject;
@@ -54,7 +54,7 @@ class DataObjectToEventListConverterTest {
   void testDlmsObjectFound() throws ObjectConfigException {
     final Protocol protocol = Protocol.SMR_5_0_0;
 
-    final DateTime dateTime1 = new DateTime(2021, 9, 16, 10, 35, 10, DateTimeZone.UTC);
+    final ZonedDateTime dateTime1 = ZonedDateTime.of(2021, 9, 16, 10, 35, 10, 0, ZoneOffset.UTC);
     final DataObject eventDataObject =
         this.createEventDataObjectMagnitudeDuration(dateTime1, 93, 11, 21);
     final DataObject source = DataObject.newArrayData(Arrays.asList(eventDataObject));
@@ -86,7 +86,7 @@ class DataObjectToEventListConverterTest {
         .thenReturn(cosemObjectWithoutSourceObjectMapping);
     when(cosemObjectWithoutSourceObjectMapping.getProperties()).thenReturn(new HashMap<>());
 
-    final DateTime dateTime1 = new DateTime(2021, 9, 16, 10, 35, 10, DateTimeZone.UTC);
+    final ZonedDateTime dateTime1 = ZonedDateTime.of(2021, 9, 16, 10, 35, 10, 0, ZoneOffset.UTC);
     final DataObject eventDataObject =
         this.createEventDataObjectMagnitudeDuration(dateTime1, 93, 11, 21);
     final DataObject source = DataObject.newArrayData(Arrays.asList(eventDataObject));
@@ -107,7 +107,7 @@ class DataObjectToEventListConverterTest {
   void testNoSourceObjectMappedOnEventCode() throws ObjectConfigException {
     final Protocol protocol = Protocol.SMR_5_2;
 
-    final DateTime dateTime1 = new DateTime(2021, 9, 16, 10, 35, 10, DateTimeZone.UTC);
+    final ZonedDateTime dateTime1 = ZonedDateTime.of(2021, 9, 16, 10, 35, 10, 0, ZoneOffset.UTC);
     final DataObject eventDataObject =
         this.createEventDataObjectMagnitudeDuration(dateTime1, 1, 11, 21);
     final DataObject source = DataObject.newArrayData(Arrays.asList(eventDataObject));
@@ -149,7 +149,7 @@ class DataObjectToEventListConverterTest {
             Map.of(
                 ObjectProperty.SOURCE_OBJECTS, Map.of("93", "POWER_QUALITY_EXTENDED_EVENT_CODE")));
 
-    final DateTime dateTime1 = new DateTime(2021, 9, 16, 10, 35, 10, DateTimeZone.UTC);
+    final ZonedDateTime dateTime1 = ZonedDateTime.of(2021, 9, 16, 10, 35, 10, 0, ZoneOffset.UTC);
     final DataObject eventDataObject =
         this.createEventDataObjectMagnitudeDuration(dateTime1, 93, 11, 21);
     final DataObject source = DataObject.newArrayData(Arrays.asList(eventDataObject));
@@ -218,8 +218,8 @@ class DataObjectToEventListConverterTest {
     final Protocol protocol = Protocol.SMR_5_0_0;
 
     // GIVEN
-    final DateTime dateTime1 = new DateTime(2021, 9, 16, 10, 35, 10, DateTimeZone.UTC);
-    final DateTime dateTime2 = new DateTime(2021, 9, 17, 11, 22, 45, DateTimeZone.UTC);
+    final ZonedDateTime dateTime1 = ZonedDateTime.of(2021, 9, 16, 10, 35, 10, 0, ZoneOffset.UTC);
+    final ZonedDateTime dateTime2 = ZonedDateTime.of(2021, 9, 17, 11, 22, 45, 0, ZoneOffset.UTC);
 
     final DataObject eventDataObject1 = this.createEventDataObject(dateTime1, 1);
     final DataObject eventDataObject2 = this.createEventDataObject(dateTime2, 2);
@@ -247,8 +247,8 @@ class DataObjectToEventListConverterTest {
     final Protocol protocol = Protocol.SMR_5_0_0;
 
     // GIVEN
-    final DateTime dateTime1 = new DateTime(2021, 9, 16, 10, 35, 10, DateTimeZone.UTC);
-    final DateTime dateTime2 = new DateTime(2021, 9, 17, 11, 22, 45, DateTimeZone.UTC);
+    final ZonedDateTime dateTime1 = ZonedDateTime.of(2021, 9, 16, 10, 35, 10, 0, ZoneOffset.UTC);
+    final ZonedDateTime dateTime2 = ZonedDateTime.of(2021, 9, 17, 11, 22, 45, 0, ZoneOffset.UTC);
     final DataObject eventDataObject1 = this.createEventDataObject(dateTime1, 1, 11);
     final DataObject eventDataObject2 = this.createEventDataObject(dateTime2, 2, 12);
 
@@ -275,8 +275,8 @@ class DataObjectToEventListConverterTest {
     final Protocol protocol = Protocol.SMR_5_2;
 
     // GIVEN
-    final DateTime dateTime1 = new DateTime(2021, 9, 16, 10, 35, 10, DateTimeZone.UTC);
-    final DateTime dateTime2 = new DateTime(2021, 9, 17, 11, 22, 45, DateTimeZone.UTC);
+    final ZonedDateTime dateTime1 = ZonedDateTime.of(2021, 9, 16, 10, 35, 10, 0, ZoneOffset.UTC);
+    final ZonedDateTime dateTime2 = ZonedDateTime.of(2021, 9, 17, 11, 22, 45, 0, ZoneOffset.UTC);
     final DataObject eventDataObject1 =
         this.createEventDataObjectMagnitudeDuration(dateTime1, 93, 11, 21);
     final DataObject eventDataObject2 =
@@ -314,8 +314,8 @@ class DataObjectToEventListConverterTest {
     final Protocol protocol = Protocol.SMR_5_2C;
 
     // GIVEN
-    final DateTime dateTime1 = new DateTime(2021, 9, 16, 10, 35, 10, DateTimeZone.UTC);
-    final DateTime dateTime2 = new DateTime(2021, 9, 17, 11, 22, 45, DateTimeZone.UTC);
+    final ZonedDateTime dateTime1 = ZonedDateTime.of(2021, 9, 16, 10, 35, 10, 0, ZoneOffset.UTC);
+    final ZonedDateTime dateTime2 = ZonedDateTime.of(2021, 9, 17, 11, 22, 45, 0, ZoneOffset.UTC);
     final DataObject eventDataObject1 = this.createEventDataObjectMagnitude(dateTime1, 51, 11);
     final DataObject eventDataObject2 = this.createEventDataObjectMagnitude(dateTime2, 52, 12);
     final String MAGNITUDE = "magnitude";
@@ -339,14 +339,14 @@ class DataObjectToEventListConverterTest {
         .containsExactly(expectedEvent1, expectedEvent2);
   }
 
-  private DataObject createEventDataObject(final DateTime dateTime, final int number) {
+  private DataObject createEventDataObject(final ZonedDateTime dateTime, final int number) {
     final DataObject eventCode = this.getDataObject(number);
     final DataObject timeStamp = this.dlmsHelper.asDataObject(dateTime);
     return DataObject.newStructureData(Arrays.asList(timeStamp, eventCode));
   }
 
   private DataObject createEventDataObject(
-      final DateTime dateTime, final int number, final int intCounter) {
+      final ZonedDateTime dateTime, final int number, final int intCounter) {
     final DataObject eventCode = this.getDataObject(number);
     final DataObject timeStamp = this.dlmsHelper.asDataObject(dateTime);
     final DataObject counter = this.getDataObject(intCounter);
@@ -354,7 +354,10 @@ class DataObjectToEventListConverterTest {
   }
 
   private DataObject createEventDataObjectMagnitudeDuration(
-      final DateTime dateTime, final int number, final int intMagnitude, final int intDuration) {
+      final ZonedDateTime dateTime,
+      final int number,
+      final int intMagnitude,
+      final int intDuration) {
     final DataObject eventCode = this.getDataObject(number);
     final DataObject timeStamp = this.dlmsHelper.asDataObject(dateTime);
     final DataObject magnitude = this.getDataObject(intMagnitude);
@@ -363,7 +366,7 @@ class DataObjectToEventListConverterTest {
   }
 
   private DataObject createEventDataObjectMagnitude(
-      final DateTime dateTime, final int number, final int intMagnitude) {
+      final ZonedDateTime dateTime, final int number, final int intMagnitude) {
     final DataObject eventCode = this.getDataObject(number);
     final DataObject timeStamp = this.dlmsHelper.asDataObject(dateTime);
     final DataObject magnitude = this.getDataObject(intMagnitude);

@@ -6,10 +6,10 @@ package org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.alarm;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.Date;
 import lombok.extern.slf4j.Slf4j;
-import org.joda.time.DateTime;
 import org.openmuc.jdlms.AccessResultCode;
 import org.openmuc.jdlms.AttributeAddress;
 import org.openmuc.jdlms.SetParameter;
@@ -90,8 +90,8 @@ public class TestAlarmSchedulerCommandExecutor
             null,
             SingleActionScheduleAttribute.EXECUTION_TIME.attributeId());
 
-    final DateTime convertedDateTime =
-        DlmsDateTimeConverter.toDateTime(scheduleDate, device.getTimezone());
+    final ZonedDateTime convertedDateTime =
+        DlmsDateTimeConverter.toZonedDateTime(scheduleDate, device.getTimezone());
 
     final DataObject timeDataObject = getDataObjectTime(convertedDateTime);
     final DataObject dateDataObject = getDataObjectDate(convertedDateTime);
@@ -115,20 +115,20 @@ public class TestAlarmSchedulerCommandExecutor
         : DlmsObjectType.LAST_GASP_TEST;
   }
 
-  private static DataObject getDataObjectDate(final DateTime scheduledDateTime) {
+  private static DataObject getDataObjectDate(final ZonedDateTime scheduledDateTime) {
     return DataObject.newDateData(
         new CosemDate(
             scheduledDateTime.getYear(),
-            scheduledDateTime.getMonthOfYear(),
+            scheduledDateTime.getMonthValue(),
             scheduledDateTime.getDayOfMonth()));
   }
 
-  private static DataObject getDataObjectTime(final DateTime scheduledDateTime) {
+  private static DataObject getDataObjectTime(final ZonedDateTime scheduledDateTime) {
     return DataObject.newTimeData(
         new CosemTime(
-            scheduledDateTime.getHourOfDay(),
-            scheduledDateTime.getMinuteOfHour(),
-            scheduledDateTime.getSecondOfMinute(),
+            scheduledDateTime.getHour(),
+            scheduledDateTime.getMinute(),
+            scheduledDateTime.getSecond(),
             0));
   }
 

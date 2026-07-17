@@ -5,15 +5,13 @@
 package org.opensmartgridplatform.adapter.protocol.oslp.elster.application.mapping;
 
 import com.google.protobuf.ByteString;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import ma.glasnost.orika.CustomConverter;
 import ma.glasnost.orika.MappingContext;
 import ma.glasnost.orika.metadata.Type;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeFieldType;
-import org.joda.time.MutableDateTime;
 import org.opensmartgridplatform.dto.valueobjects.ConfigurationDto;
 import org.opensmartgridplatform.dto.valueobjects.DaliConfigurationDto;
 import org.opensmartgridplatform.dto.valueobjects.DeviceFixedIpDto;
@@ -176,7 +174,7 @@ public class OslpGetConfigurationResponseToConfigurationConverter
 
     LOGGER.info("month: {}, day: {}, hour: {}, minutes: {}", month, day, hour, minutes);
 
-    final int year = DateTime.now().getYear();
+    final int year = LocalDate.now().getYear();
     final int dayOfMonth = this.getLastDayOfMonth(month, day);
     final ZonedDateTime dateTime =
         ZonedDateTime.of(year, month, dayOfMonth, hour, minutes, 0, 0, ZoneId.systemDefault());
@@ -188,29 +186,22 @@ public class OslpGetConfigurationResponseToConfigurationConverter
 
   /** For a given Month of this year, find the date for the given weekday. */
   private int getLastDayOfMonth(final int month, final int day) {
-    final DateTime dateTime = DateTime.now();
-    MutableDateTime x = dateTime.toMutableDateTime();
-    x.set(DateTimeFieldType.monthOfYear(), month);
-    x.set(DateTimeFieldType.dayOfMonth(), 31);
+    LocalDate date = LocalDate.now().withMonth(month);
+    date = date.withDayOfMonth(date.lengthOfMonth());
 
-    x = this.findLastDayOfOfMonth(day, x);
-    return x.getDayOfMonth();
+    date = this.findLastDayOfOfMonth(day, date);
+    return date.getDayOfMonth();
   }
 
   /**
    * Loop backwards through the days of the month until we find the given day of the month. For
    * example the last Sunday of the month March of this year.
    */
-  private MutableDateTime findLastDayOfOfMonth(final int day, final MutableDateTime x) {
-    final int yodaTimeDay = day + 1;
-    while (true) {
-      if (yodaTimeDay == x.getDayOfWeek()) {
-        break;
-      } else {
-        final int dayOfMonth = x.getDayOfMonth() - 1;
-        x.set(DateTimeFieldType.dayOfMonth(), dayOfMonth);
-      }
+  private LocalDate findLastDayOfOfMonth(final int day, LocalDate date) {
+    final int isoDayOfWeek = day + 1;
+    while (isoDayOfWeek != date.getDayOfWeek().getValue()) {
+      date = date.minusDays(1);
     }
-    return x;
+    return date;
   }
 }

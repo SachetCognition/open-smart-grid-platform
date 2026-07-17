@@ -17,12 +17,14 @@ import static org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.te
 import static org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.testutil.ObjectConfigServiceHelper.createClock;
 import static org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.testutil.ObjectConfigServiceHelper.createObject;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import org.joda.time.DateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -88,8 +90,10 @@ class GetPeriodicMeterReadsGasCommandExecutorTest {
   private final DlmsDevice device = this.createDevice(Protocol.DSMR_4_2_2);
   private final long from = 1111110L;
   private final long to = 2222222L;
-  private final DateTime fromDateTime = new DateTime(this.from);
-  private final DateTime toDateTime = new DateTime(this.to);
+  private final ZonedDateTime fromDateTime =
+      ZonedDateTime.ofInstant(Instant.ofEpochMilli(this.from), ZoneId.systemDefault());
+  private final ZonedDateTime toDateTime =
+      ZonedDateTime.ofInstant(Instant.ofEpochMilli(this.to), ZoneId.systemDefault());
   private MessageMetadata messageMetadata;
 
   private static final int CLASS_ID_DATA = 1;
@@ -137,8 +141,8 @@ class GetPeriodicMeterReadsGasCommandExecutorTest {
     final PeriodicMeterReadsRequestDto request =
         new PeriodicMeterReadsRequestDto(
             PeriodTypeDto.DAILY,
-            this.fromDateTime.toDate(),
-            this.toDateTime.toDate(),
+            Date.from(this.fromDateTime.toInstant()),
+            Date.from(this.toDateTime.toInstant()),
             ChannelDto.ONE);
     when(this.objectConfigService.getOptionalCosemObject(any(), any(), any()))
         .thenReturn(Optional.empty());
@@ -164,13 +168,16 @@ class GetPeriodicMeterReadsGasCommandExecutorTest {
     final ChannelDto channel = ChannelDto.ONE;
     final PeriodicMeterReadsRequestDto request =
         new PeriodicMeterReadsRequestDto(
-            periodType, this.fromDateTime.toDate(), this.toDateTime.toDate(), channel);
+            periodType,
+            Date.from(this.fromDateTime.toInstant()),
+            Date.from(this.toDateTime.toInstant()),
+            channel);
 
     this.device.setTimezone(timeZone);
-    final DateTime convertedFromTime =
-        DlmsDateTimeConverter.toDateTime(new Date(this.from), this.device.getTimezone());
-    final DateTime convertedToTime =
-        DlmsDateTimeConverter.toDateTime(new Date(this.to), this.device.getTimezone());
+    final ZonedDateTime convertedFromTime =
+        DlmsDateTimeConverter.toZonedDateTime(new Date(this.from), this.device.getTimezone());
+    final ZonedDateTime convertedToTime =
+        DlmsDateTimeConverter.toZonedDateTime(new Date(this.to), this.device.getTimezone());
 
     // SETUP - dlms objects
     final ProfileGeneric profile = this.createProfile();

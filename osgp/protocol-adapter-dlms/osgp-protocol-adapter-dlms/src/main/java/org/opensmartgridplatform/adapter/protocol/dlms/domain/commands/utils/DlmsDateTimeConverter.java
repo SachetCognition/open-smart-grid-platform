@@ -8,8 +8,6 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Date;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 
 /**
  * Convert DateTime fields to the timezone defined within an e-meter DlmsDevice. So local times can
@@ -42,26 +40,18 @@ public class DlmsDateTimeConverter {
     return utcZonedDateTime.withZoneSameInstant(ZoneId.of(determineTimeZone(timezone)));
   }
 
-  public static DateTime toDateTime(final DateTime utcDateTime, final String timezone) {
-    return toDateTime(utcDateTime.toDate(), timezone);
-  }
-
   /**
-   * Convert a java.util.Date to a org.joda.time.DateTime with respect of the timezone. This is a
-   * temporary convenience method to convert to joda times, because joda times should be refactored
-   * to java time.
+   * Convert a java.time.ZonedDateTime to the timezone defined within a DlmsDevice, preserving the
+   * instant. If the timezone is not defined within a device a UTC timezone will be used as
+   * fallback.
    *
-   * @param utcDateTime a date time in UTC
+   * @param dateTime a zoned date time
    * @param timezone null or contains a timezone
-   * @return DateTime within a timezone from a device or when device timezone is not defined then in
-   *     UTC timezone
+   * @return ZonedDateTime within a timezone from a device or when device timezone is not defined
+   *     then in UTC timezone
    */
-  public static DateTime toDateTime(final Date utcDateTime, final String timezone) {
-
-    final ZonedDateTime convertedZoneDateTime = toZonedDateTime(utcDateTime, timezone);
-    return new DateTime(
-        convertedZoneDateTime.toInstant().toEpochMilli(),
-        DateTimeZone.forID(determineTimeZone(timezone)));
+  public static ZonedDateTime toZonedDateTime(final ZonedDateTime dateTime, final String timezone) {
+    return dateTime.withZoneSameInstant(ZoneId.of(determineTimeZone(timezone)));
   }
 
   private static String determineTimeZone(final String timezone) {
