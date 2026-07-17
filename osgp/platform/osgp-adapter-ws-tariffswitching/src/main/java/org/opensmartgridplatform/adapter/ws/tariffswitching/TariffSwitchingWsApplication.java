@@ -19,6 +19,7 @@ import org.springframework.boot.autoconfigure.jms.activemq.ActiveMQAutoConfigura
 import org.springframework.boot.autoconfigure.jms.artemis.ArtemisAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.webservices.WebServicesAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
@@ -53,7 +54,8 @@ import org.springframework.ws.transport.http.MessageDispatcherServlet;
       SecurityAutoConfiguration.class,
       ManagementWebSecurityAutoConfiguration.class,
       PropertyPlaceholderAutoConfiguration.class,
-      DataSourcePoolMetricsAutoConfiguration.class
+      DataSourcePoolMetricsAutoConfiguration.class,
+      WebServicesAutoConfiguration.class
     })
 @Import(ApplicationContext.class)
 public class TariffSwitchingWsApplication extends SpringBootServletInitializer {
@@ -91,9 +93,14 @@ public class TariffSwitchingWsApplication extends SpringBootServletInitializer {
    * mappings so every SOAP request fails with a 404.
    */
   @Bean
-  public ServletRegistrationBean<MessageDispatcherServlet> messageDispatcherServlet() {
+  public ServletRegistrationBean<MessageDispatcherServlet> messageDispatcherServlet(
+      final org.springframework.context.ApplicationContext rootContext) {
+    final AnnotationConfigWebApplicationContext servletContext =
+        new AnnotationConfigWebApplicationContext();
+    servletContext.setParent(rootContext);
+
     final MessageDispatcherServlet servlet = new MessageDispatcherServlet();
-    servlet.setContextClass(AnnotationConfigWebApplicationContext.class);
+    servlet.setApplicationContext(servletContext);
     servlet.setTransformWsdlLocations(true);
     final ServletRegistrationBean<MessageDispatcherServlet> registration =
         new ServletRegistrationBean<>(servlet, "/*");
