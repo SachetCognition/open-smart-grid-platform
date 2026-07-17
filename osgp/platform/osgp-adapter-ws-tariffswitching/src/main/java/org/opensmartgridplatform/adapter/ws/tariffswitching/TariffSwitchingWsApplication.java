@@ -5,6 +5,8 @@
 package org.opensmartgridplatform.adapter.ws.tariffswitching;
 
 import java.util.TimeZone;
+import org.apache.catalina.connector.Connector;
+import org.apache.coyote.ajp.AbstractAjpProtocol;
 import org.opensmartgridplatform.adapter.ws.tariffswitching.application.config.ApplicationContext;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringBootConfiguration;
@@ -21,6 +23,7 @@ import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfigurat
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.webservices.WebServicesAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
@@ -75,6 +78,26 @@ public class TariffSwitchingWsApplication extends SpringBootServletInitializer {
         new PropertySourcesPlaceholderConfigurer();
     configurer.setIgnoreUnresolvablePlaceholders(true);
     return configurer;
+  }
+
+  /**
+   * Adds an AJP/1.3 connector on port 8009 to the embedded Tomcat. The reverse proxy (Apache HTTPD)
+   * terminates mutual TLS and forwards the client certificate to the adapter over AJP, exactly as it
+   * does for the modules still deployed as Tomcat WARs. Plain HTTP does not carry the client
+   * certificate, so the certificate-based authorization interceptors require AJP here.
+   */
+  @Bean
+  public TomcatServletWebServerFactory servletContainer() {
+    final TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory();
+    final Connector ajpConnector = new Connector("AJP/1.3");
+    ajpConnector.setPort(8009);
+    ajpConnector.setSecure(false);
+    ajpConnector.setScheme("http");
+    ajpConnector.setAllowTrace(false);
+    ((AbstractAjpProtocol<?>) ajpConnector.getProtocolHandler()).setSecretRequired(false);
+    ((AbstractAjpProtocol<?>) ajpConnector.getProtocolHandler()).setAddress(null);
+    factory.addAdditionalTomcatConnectors(ajpConnector);
+    return factory;
   }
 
   @Override
