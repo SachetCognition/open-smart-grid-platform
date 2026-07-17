@@ -24,13 +24,15 @@ import static org.opensmartgridplatform.dlms.objectconfig.DlmsObjectType.ACTIVE_
 import static org.opensmartgridplatform.dlms.objectconfig.DlmsObjectType.DAILY_VALUES_COMBINED;
 import static org.opensmartgridplatform.dlms.objectconfig.DlmsObjectType.DAILY_VALUES_E;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.assertj.core.api.Assertions;
-import org.joda.time.DateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -96,8 +98,10 @@ class GetPeriodicMeterReadsCommandExecutorTest {
   private final DlmsDevice device = this.createDevice(Protocol.DSMR_4_2_2);
   private final long from = 1111110L;
   private final long to = 2222222L;
-  private final DateTime fromDateTime = new DateTime(this.from);
-  private final DateTime toDateTime = new DateTime(this.to);
+  private final ZonedDateTime fromDateTime =
+      ZonedDateTime.ofInstant(Instant.ofEpochMilli(this.from), ZoneId.systemDefault());
+  private final ZonedDateTime toDateTime =
+      ZonedDateTime.ofInstant(Instant.ofEpochMilli(this.to), ZoneId.systemDefault());
 
   private MessageMetadata messageMetadata;
 
@@ -128,8 +132,8 @@ class GetPeriodicMeterReadsCommandExecutorTest {
     final PeriodicMeterReadsRequestDto request =
         new PeriodicMeterReadsRequestDto(
             PeriodTypeDto.DAILY,
-            this.fromDateTime.toDate(),
-            this.toDateTime.toDate(),
+            Date.from(this.fromDateTime.toInstant()),
+            Date.from(this.toDateTime.toInstant()),
             ChannelDto.ONE);
     when(this.objectConfigService.getOptionalCosemObject(
             this.device.getProtocolName(), this.device.getProtocolVersion(), DAILY_VALUES_E))
@@ -169,10 +173,10 @@ class GetPeriodicMeterReadsCommandExecutorTest {
         new PeriodicMeterReadsRequestDto(periodType, new Date(this.from), new Date(this.to));
 
     this.device.setTimezone(timeZone);
-    final DateTime convertedFromTime =
-        DlmsDateTimeConverter.toDateTime(new Date(this.from), this.device.getTimezone());
-    final DateTime convertedToTime =
-        DlmsDateTimeConverter.toDateTime(new Date(this.to), this.device.getTimezone());
+    final ZonedDateTime convertedFromTime =
+        DlmsDateTimeConverter.toZonedDateTime(new Date(this.from), this.device.getTimezone());
+    final ZonedDateTime convertedToTime =
+        DlmsDateTimeConverter.toZonedDateTime(new Date(this.to), this.device.getTimezone());
 
     // SETUP - dlms objects
     final ProfileGeneric profile = this.createProfile();

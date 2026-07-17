@@ -11,13 +11,13 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.LocalTime;
 import org.opensmartgridplatform.adapter.protocol.oslp.elster.application.mapping.OslpMapper;
 import org.opensmartgridplatform.adapter.protocol.oslp.elster.application.services.oslp.OslpDeviceSettingsService;
 import org.opensmartgridplatform.adapter.protocol.oslp.elster.application.services.oslp.OslpSigningService;
@@ -1111,16 +1111,21 @@ public class OslpDeviceService implements DeviceService {
             .setActionTime(Oslp.ActionTime.valueOf(schedule.getActionTime().ordinal() + 1));
 
     if (schedule.getStartDay() != null) {
-      scheduleBuilder = scheduleBuilder.setStartDay(schedule.getStartDay().toString(DATE_FORMAT));
+      scheduleBuilder =
+          scheduleBuilder.setStartDay(
+              schedule.getStartDay().format(DateTimeFormatter.ofPattern(DATE_FORMAT)));
     }
 
     if (schedule.getEndDay() != null) {
-      scheduleBuilder = scheduleBuilder.setEndDay(schedule.getEndDay().toString(DATE_FORMAT));
+      scheduleBuilder =
+          scheduleBuilder.setEndDay(
+              schedule.getEndDay().format(DateTimeFormatter.ofPattern(DATE_FORMAT)));
     }
 
     if (StringUtils.isNotBlank(schedule.getTime())) {
       scheduleBuilder =
-          scheduleBuilder.setTime(LocalTime.parse(schedule.getTime()).toString(TIME_FORMAT));
+          scheduleBuilder.setTime(
+              LocalTime.parse(schedule.getTime()).format(DateTimeFormatter.ofPattern(TIME_FORMAT)));
     }
 
     if (schedule.getTriggerWindow() != null) {

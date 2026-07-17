@@ -5,6 +5,7 @@
 package org.opensmartgridplatform.adapter.protocol.dlms.domain.datadecoder;
 
 import java.nio.ByteBuffer;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.openmuc.jdlms.datatypes.DataObject;
@@ -31,6 +32,9 @@ public class BasicDlmsDataDecoder {
           DataObject.Type.LONG64_UNSIGNED,
           DataObject.Type.LONG_INTEGER,
           DataObject.Type.LONG_UNSIGNED);
+
+  private static final DateTimeFormatter TIME_FORMATTER =
+      DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
 
   private final DlmsHelper dlmsHelper;
 
@@ -131,7 +135,7 @@ public class BasicDlmsDataDecoder {
     return this.getDayOfWeek(dateTimeDto)
         + dateTimeDto.getDate().asLocalDate()
         + ", "
-        + dateTimeDto.getTime().asLocalTime().toString()
+        + dateTimeDto.getTime().asLocalTime().format(TIME_FORMATTER)
         + ", deviation="
         + dateTimeDto.getDeviation()
         + ", "

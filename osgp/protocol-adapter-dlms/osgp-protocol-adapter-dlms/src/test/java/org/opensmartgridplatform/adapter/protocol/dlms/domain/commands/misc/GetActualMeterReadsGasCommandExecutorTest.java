@@ -17,12 +17,13 @@ import static org.opensmartgridplatform.dlms.objectconfig.ValueType.DYNAMIC;
 import static org.opensmartgridplatform.dlms.objectconfig.ValueType.FIXED_IN_PROFILE;
 
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-import org.joda.time.DateTime;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -72,7 +73,7 @@ class GetActualMeterReadsGasCommandExecutorTest {
           .withCorrelationUid("123456")
           .withDeviceModelCode(",G4,G4,G4,G4")
           .build();
-  private static final DateTime DATE_TIME = DateTime.parse("2018-12-31T23:00:00Z");
+  private static final ZonedDateTime DATE_TIME = ZonedDateTime.parse("2018-12-31T23:00:00Z");
   private static final short SCALER = 0;
   private static final short UNIT = 13; // M3
   private static final List<Integer> ALL_CHANNELS = List.of(1, 2, 3, 4);
@@ -158,7 +159,7 @@ class GetActualMeterReadsGasCommandExecutorTest {
         .usingRecursiveFieldByFieldElementComparator()
         .isEqualTo(expectedAttributeAddresses);
 
-    assertThat(responseDto.getCaptureTime()).isEqualTo(this.DATE_TIME.toDate());
+    assertThat(responseDto.getCaptureTime()).isEqualTo(Date.from(this.DATE_TIME.toInstant()));
     assertThat(responseDto.getConsumption().getValue())
         .isEqualByComparingTo(BigDecimal.valueOf(VALUE));
     assertThat(responseDto.getConsumption().getDlmsUnit()).isEqualTo(DlmsUnitTypeDto.M3);
@@ -182,11 +183,11 @@ class GetActualMeterReadsGasCommandExecutorTest {
             DataObject.newDateTimeData(
                 new CosemDateTime(
                     this.DATE_TIME.getYear(),
-                    this.DATE_TIME.getMonthOfYear(),
+                    this.DATE_TIME.getMonthValue(),
                     this.DATE_TIME.getDayOfMonth(),
-                    this.DATE_TIME.getHourOfDay(),
-                    this.DATE_TIME.getMinuteOfHour(),
-                    this.DATE_TIME.getSecondOfMinute(),
+                    this.DATE_TIME.getHour(),
+                    this.DATE_TIME.getMinute(),
+                    this.DATE_TIME.getSecond(),
                     0)),
             resultCode));
 

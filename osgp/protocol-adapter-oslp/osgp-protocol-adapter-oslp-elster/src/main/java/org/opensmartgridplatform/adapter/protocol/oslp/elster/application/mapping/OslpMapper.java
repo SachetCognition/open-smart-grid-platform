@@ -4,19 +4,23 @@
 
 package org.opensmartgridplatform.adapter.protocol.oslp.elster.application.mapping;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import ma.glasnost.orika.CustomConverter;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
 import ma.glasnost.orika.impl.ConfigurableMapper;
 import ma.glasnost.orika.metadata.Type;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
 import org.springframework.stereotype.Component;
 
 @Component
 public class OslpMapper extends ConfigurableMapper {
 
   private static final String TIME_FORMAT = "yyyyMMddHHmmss";
+
+  private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern(TIME_FORMAT);
 
   @Override
   protected void configure(final MapperFactory factory) {
@@ -39,33 +43,33 @@ public class OslpMapper extends ConfigurableMapper {
     factory.getConverterFactory().registerConverter(new RelayTypeConverter());
     factory.getConverterFactory().registerConverter(new RelayDataConverter());
 
-    // Converter from String to DateTime using the OSLP time format.
+    // Converter from String to ZonedDateTime using the OSLP time format.
     factory
         .getConverterFactory()
         .registerConverter(
-            new CustomConverter<String, DateTime>() {
+            new CustomConverter<String, ZonedDateTime>() {
 
               @Override
-              public DateTime convert(
+              public ZonedDateTime convert(
                   final String source,
-                  final Type<? extends DateTime> destinationType,
+                  final Type<? extends ZonedDateTime> destinationType,
                   final MappingContext context) {
-                return DateTimeFormat.forPattern(TIME_FORMAT).withZoneUTC().parseDateTime(source);
+                return LocalDateTime.parse(source, TIME_FORMATTER).atZone(ZoneOffset.UTC);
               }
             });
 
-    // Converter from DateTime to String using the OSLP time format.
+    // Converter from ZonedDateTime to String using the OSLP time format.
     factory
         .getConverterFactory()
         .registerConverter(
-            new CustomConverter<DateTime, String>() {
+            new CustomConverter<ZonedDateTime, String>() {
 
               @Override
               public String convert(
-                  final DateTime source,
+                  final ZonedDateTime source,
                   final Type<? extends String> destinationType,
                   final MappingContext context) {
-                return source.toString(DateTimeFormat.forPattern(TIME_FORMAT).withZoneUTC());
+                return TIME_FORMATTER.format(source.withZoneSameInstant(ZoneOffset.UTC));
               }
             });
   }

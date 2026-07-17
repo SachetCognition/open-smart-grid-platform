@@ -7,11 +7,10 @@ package org.opensmartgridplatform.domain.core.validation.joda;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import jakarta.validation.constraints.Future;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.ReadableInstant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
-public class FutureValidator implements ConstraintValidator<Future, ReadableInstant> {
+public class FutureValidator implements ConstraintValidator<Future, ZonedDateTime> {
 
   @Override
   public void initialize(final Future constraintAnnotation) {
@@ -19,13 +18,14 @@ public class FutureValidator implements ConstraintValidator<Future, ReadableInst
   }
 
   @Override
-  public boolean isValid(final ReadableInstant value, final ConstraintValidatorContext context) {
+  public boolean isValid(final ZonedDateTime value, final ConstraintValidatorContext context) {
     if (value == null) {
       return true;
     }
 
-    final DateTime checkDate = DateTime.now(DateTimeZone.UTC).withTimeAtStartOfDay();
+    final ZonedDateTime checkDate =
+        ZonedDateTime.now(ZoneOffset.UTC).toLocalDate().atStartOfDay(ZoneOffset.UTC);
 
-    return value.isEqual(checkDate) || value.isAfter(checkDate);
+    return !value.isBefore(checkDate);
   }
 }

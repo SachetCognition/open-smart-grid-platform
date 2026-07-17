@@ -11,9 +11,10 @@ import com.beanit.openiec61850.ServerModel;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
 import org.opensmartgridplatform.adapter.protocol.iec61850.device.DeviceRequest;
 import org.opensmartgridplatform.adapter.protocol.iec61850.domain.entities.Iec61850Device;
 import org.opensmartgridplatform.adapter.protocol.iec61850.domain.repositories.Iec61850DeviceRepository;
@@ -128,7 +129,7 @@ public class Iec61850DeviceConnectionService {
         deviceIdentification,
         deviceConnectionParameters.getNetworkAddress(),
         this.responseTimeout);
-    final DateTime startTime = DateTime.now();
+    final ZonedDateTime startTime = ZonedDateTime.now();
 
     // Create instance of appropriate event listener.
     Iec61850ClientBaseEventListener eventListener = null;
@@ -174,13 +175,13 @@ public class Iec61850DeviceConnectionService {
         new DeviceConnection(
             iec61850Connection, deviceIdentification, organisationIdentification, serverName);
 
-    final DateTime endTime = DateTime.now();
+    final ZonedDateTime endTime = ZonedDateTime.now();
     LOGGER.info(
         "Connected to device: {}, fetched server model. Start time: {}, end time: {}, total time in milliseconds: {}",
         deviceIdentification,
         startTime,
         endTime,
-        endTime.minus(startTime.getMillis()).getMillis());
+        Duration.between(startTime, endTime).toMillis());
 
     this.iec61850RtuDeviceReportingService.enableReportingForDevice(
         connection, deviceIdentification, serverName);
@@ -421,15 +422,15 @@ public class Iec61850DeviceConnectionService {
     if (deviceRequest == null) {
       return;
     }
-    final DateTime endTime = DateTime.now();
-    final DateTime startTime = deviceConnection.getConnection().getConnectionStartTime();
+    final ZonedDateTime endTime = ZonedDateTime.now();
+    final ZonedDateTime startTime = deviceConnection.getConnection().getConnectionStartTime();
     LOGGER.info(
         "Device: {}, messageType: {}, Start time: {}, end time: {}, total time in milliseconds: {}",
         deviceConnection.getDeviceIdentification(),
         deviceRequest.getMessageType(),
         startTime,
         endTime,
-        endTime.minus(startTime.getMillis()).getMillis());
+        Duration.between(startTime, endTime).toMillis());
   }
 
   public Iec61850ClientAssociation getIec61850ClientAssociation(final String deviceIdentification) {

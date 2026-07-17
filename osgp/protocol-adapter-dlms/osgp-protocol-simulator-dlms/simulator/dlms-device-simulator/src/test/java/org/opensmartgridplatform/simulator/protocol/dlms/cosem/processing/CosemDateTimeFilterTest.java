@@ -6,13 +6,13 @@ package org.opensmartgridplatform.simulator.protocol.dlms.cosem.processing;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
 import org.assertj.core.api.Assertions;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -152,9 +152,9 @@ class CosemDateTimeFilterTest {
     final DataObject captureObject =
         new CaptureObject(8, "0.0.1.0.0.255", (byte) 2, 0).asDataObject();
     final DataObject dateTimeFrom =
-        this.asDataObject(new DateTime(2017, 1, 1, 0, 0, DateTimeZone.UTC), 0, false);
+        this.asDataObject(ZonedDateTime.of(2017, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC), 0, false);
     final DataObject dateTimeTo =
-        this.asDataObject(new DateTime(2017, 1, 2, 0, 0, DateTimeZone.UTC), 0, false);
+        this.asDataObject(ZonedDateTime.of(2017, 1, 2, 0, 0, 0, 0, ZoneOffset.UTC), 0, false);
     return Arrays.asList(captureObject, dateTimeFrom, dateTimeTo);
   }
 
@@ -175,25 +175,26 @@ class CosemDateTimeFilterTest {
    * @return a DataObject having a CosemDateTime for the instant of the given DateTime, with the
    *     given deviation and DST status information, as value.
    */
-  public DataObject asDataObject(final DateTime dateTime, final int deviation, final boolean dst) {
+  public DataObject asDataObject(
+      final ZonedDateTime dateTime, final int deviation, final boolean dst) {
     /*
      * Create a date time that may not point to the right instant in time,
      * but that will give proper values getting the different fields for the
      * COSEM date and time objects.
      */
-    final DateTime dateTimeWithOffset =
-        dateTime.toDateTime(DateTimeZone.UTC).minusMinutes(deviation);
+    final ZonedDateTime dateTimeWithOffset =
+        dateTime.withZoneSameInstant(ZoneOffset.UTC).minusMinutes(deviation);
     final CosemDate cosemDate =
         new CosemDate(
             dateTimeWithOffset.getYear(),
-            dateTimeWithOffset.getMonthOfYear(),
+            dateTimeWithOffset.getMonthValue(),
             dateTimeWithOffset.getDayOfMonth());
     final CosemTime cosemTime =
         new CosemTime(
-            dateTimeWithOffset.getHourOfDay(),
-            dateTimeWithOffset.getMinuteOfHour(),
-            dateTimeWithOffset.getSecondOfMinute(),
-            dateTimeWithOffset.getMillisOfSecond() / 10);
+            dateTimeWithOffset.getHour(),
+            dateTimeWithOffset.getMinute(),
+            dateTimeWithOffset.getSecond(),
+            dateTimeWithOffset.getNano() / 10_000_000);
     final ClockStatus[] clockStatusBits;
 
     if (dst) {

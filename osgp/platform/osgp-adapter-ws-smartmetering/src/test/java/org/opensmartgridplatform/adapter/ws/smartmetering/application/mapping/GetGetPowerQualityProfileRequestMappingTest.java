@@ -6,12 +6,14 @@ package org.opensmartgridplatform.adapter.ws.smartmetering.application.mapping;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.junit.jupiter.api.Test;
 import org.opensmartgridplatform.adapter.ws.schema.smartmetering.bundle.GetPowerQualityProfileRequest;
 import org.opensmartgridplatform.adapter.ws.schema.smartmetering.common.CaptureObjectDefinitions;
@@ -23,8 +25,10 @@ public class GetGetPowerQualityProfileRequestMappingTest {
   private static final String MAPPED_FIELD_VALUE_MESSAGE =
       "Mapped field should have the same value.";
 
-  private static final DateTime BEGIN_DATE = new DateTime(2017, 1, 1, 0, 0, 0, DateTimeZone.UTC);
-  private static final DateTime END_DATE = new DateTime(2017, 2, 1, 0, 0, 0, DateTimeZone.UTC);
+  private static final ZonedDateTime BEGIN_DATE =
+      ZonedDateTime.of(2017, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+  private static final ZonedDateTime END_DATE =
+      ZonedDateTime.of(2017, 2, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 
   private final MonitoringMapper mapper = new MonitoringMapper();
 
@@ -48,17 +52,21 @@ public class GetGetPowerQualityProfileRequestMappingTest {
         .as(MAPPED_FIELD_VALUE_MESSAGE)
         .isEqualTo(source.getProfileType());
 
-    assertThat(this.toGregorianCalendar(new DateTime(result.getBeginDate())))
+    assertThat(
+            this.toGregorianCalendar(
+                ZonedDateTime.ofInstant(result.getBeginDate().toInstant(), ZoneId.systemDefault())))
         .as(MAPPED_FIELD_VALUE_MESSAGE)
         .isEqualTo(source.getBeginDate());
-    assertThat(this.toGregorianCalendar(new DateTime(result.getEndDate())))
+    assertThat(
+            this.toGregorianCalendar(
+                ZonedDateTime.ofInstant(result.getEndDate().toInstant(), ZoneId.systemDefault())))
         .as(MAPPED_FIELD_VALUE_MESSAGE)
         .isEqualTo(source.getEndDate());
   }
 
-  private XMLGregorianCalendar toGregorianCalendar(final DateTime dateTime) {
+  private XMLGregorianCalendar toGregorianCalendar(final ZonedDateTime dateTime) {
     final GregorianCalendar gcal = new GregorianCalendar();
-    gcal.setTime(dateTime.toDate());
+    gcal.setTime(Date.from(dateTime.toInstant()));
     try {
       return DatatypeFactory.newInstance().newXMLGregorianCalendar(gcal);
     } catch (final DatatypeConfigurationException e) {

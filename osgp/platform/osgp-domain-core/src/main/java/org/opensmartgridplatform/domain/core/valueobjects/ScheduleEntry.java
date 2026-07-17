@@ -8,8 +8,8 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 import java.util.List;
-import org.joda.time.DateTime;
 import org.opensmartgridplatform.domain.core.validation.ScheduleConstraints;
 
 @ScheduleConstraints
@@ -20,9 +20,9 @@ public class ScheduleEntry implements Serializable {
 
   @NotNull private WeekDayType weekDay;
 
-  private DateTime startDay;
+  private ZonedDateTime startDay;
 
-  private DateTime endDay;
+  private ZonedDateTime endDay;
 
   @NotNull private ActionTimeType actionTime;
 
@@ -51,19 +51,19 @@ public class ScheduleEntry implements Serializable {
     this.weekDay = value;
   }
 
-  public void setStartDay(final DateTime value) {
+  public void setStartDay(final ZonedDateTime value) {
     this.startDay = value;
   }
 
-  public DateTime getStartDay() {
+  public ZonedDateTime getStartDay() {
     return this.startDay;
   }
 
-  public void setEndDay(final DateTime value) {
+  public void setEndDay(final ZonedDateTime value) {
     this.endDay = value;
   }
 
-  public DateTime getEndDay() {
+  public ZonedDateTime getEndDay() {
     return this.endDay;
   }
 

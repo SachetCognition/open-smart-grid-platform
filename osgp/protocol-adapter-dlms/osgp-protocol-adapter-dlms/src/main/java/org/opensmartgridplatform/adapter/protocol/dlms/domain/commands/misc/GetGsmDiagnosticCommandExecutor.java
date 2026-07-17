@@ -288,7 +288,7 @@ public class GetGsmDiagnosticCommandExecutor
 
       final Date captureTime;
       if (cosemDateTime.isDateTimeSpecified()) {
-        captureTime = cosemDateTime.asDateTime().toDate();
+        captureTime = Date.from(cosemDateTime.asDateTime().toInstant());
       } else {
         throw new ProtocolAdapterException("Unexpected values in gsm diagnostic capture time");
       }

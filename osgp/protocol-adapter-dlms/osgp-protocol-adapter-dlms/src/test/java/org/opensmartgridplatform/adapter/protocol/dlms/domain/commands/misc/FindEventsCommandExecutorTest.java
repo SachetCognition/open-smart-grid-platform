@@ -12,10 +12,10 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.joda.time.DateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -346,16 +346,16 @@ class FindEventsCommandExecutorTest {
   private FindEventsRequestDto createFindEventsRequestDto(
       final EventLogCategoryDto powerQualityEventLog) {
     return new FindEventsRequestDto(
-        powerQualityEventLog, DateTime.now().minusDays(70), DateTime.now());
+        powerQualityEventLog, ZonedDateTime.now().minusDays(70), ZonedDateTime.now());
   }
 
   private void verifyTimezoneConversion(
       final DlmsDevice currentDevice, final FindEventsRequestDto findEventsRequestDto) {
-    final DateTime dateTimeFrom =
-        DlmsDateTimeConverter.toDateTime(
+    final ZonedDateTime dateTimeFrom =
+        DlmsDateTimeConverter.toZonedDateTime(
             findEventsRequestDto.getFrom(), currentDevice.getTimezone());
-    final DateTime dateTimeUntil =
-        DlmsDateTimeConverter.toDateTime(
+    final ZonedDateTime dateTimeUntil =
+        DlmsDateTimeConverter.toZonedDateTime(
             findEventsRequestDto.getUntil(), currentDevice.getTimezone());
     verify(this.dlmsHelper).asDataObject(dateTimeFrom);
     verify(this.dlmsHelper).asDataObject(dateTimeUntil);

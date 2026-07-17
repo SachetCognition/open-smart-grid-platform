@@ -12,11 +12,12 @@ import static org.opensmartgridplatform.dlms.objectconfig.DlmsObjectType.ACTIVE_
 import static org.opensmartgridplatform.dlms.objectconfig.DlmsObjectType.ACTIVE_ENERGY_IMPORT_RATE_2;
 import static org.opensmartgridplatform.dlms.objectconfig.DlmsObjectType.CLOCK;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import org.joda.time.DateTime;
 import org.openmuc.jdlms.AttributeAddress;
 import org.openmuc.jdlms.GetResult;
 import org.openmuc.jdlms.datatypes.DataObject;
@@ -112,7 +113,7 @@ public class GetActualMeterReadsCommandExecutor
             conn, device, "retrieve actual meter reads", atttributeAddresses);
 
     final Map<DlmsObjectType, DlmsMeterValueDto> valueMap = new EnumMap<>(DlmsObjectType.class);
-    DateTime time = null;
+    ZonedDateTime time = null;
     int index = 0;
     for (final CosemObject object : cosemObjects) {
       if (object.getClassId() == InterfaceClass.CLOCK.id()) {
@@ -128,7 +129,7 @@ public class GetActualMeterReadsCommandExecutor
     }
 
     return new MeterReadsResponseDto(
-        time.toDate(),
+        Date.from(time.toInstant()),
         new ActiveEnergyValuesDto(
             valueMap.get(ACTIVE_ENERGY_IMPORT),
             valueMap.get(ACTIVE_ENERGY_EXPORT),
@@ -162,7 +163,7 @@ public class GetActualMeterReadsCommandExecutor
     return index;
   }
 
-  private DateTime getTime(final List<GetResult> getResultList, final int index)
+  private ZonedDateTime getTime(final List<GetResult> getResultList, final int index)
       throws ProtocolAdapterException {
     final CosemDateTimeDto cosemDateTime =
         this.dlmsHelper.readDateTime(getResultList.get(index), "Actual Energy Reads Time");

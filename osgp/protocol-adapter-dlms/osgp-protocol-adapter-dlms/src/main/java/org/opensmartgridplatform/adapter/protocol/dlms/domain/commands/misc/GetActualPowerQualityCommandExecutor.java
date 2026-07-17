@@ -7,6 +7,7 @@ package org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.misc;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Objects;
@@ -189,7 +190,7 @@ public class GetActualPowerQualityCommandExecutor
     final CosemDateTimeDto cosemDateTime =
         this.dlmsHelper.readDateTime(resultValue, "Actual Power Quality - Time");
     final PowerQualityValueDto powerQualityValue =
-        new PowerQualityValueDto(cosemDateTime.asDateTime().toDate());
+        new PowerQualityValueDto(Date.from(cosemDateTime.asDateTime().toInstant()));
     final PowerQualityObjectDto powerQualityObject =
         new PowerQualityObjectDto(pqObject.getTag(), null);
     powerQualityDtos = new PowerQualityDtos(powerQualityObject, powerQualityValue);

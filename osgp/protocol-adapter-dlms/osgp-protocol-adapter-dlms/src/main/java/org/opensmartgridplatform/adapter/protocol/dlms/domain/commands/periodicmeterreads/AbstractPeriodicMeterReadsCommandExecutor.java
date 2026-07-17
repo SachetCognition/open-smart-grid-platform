@@ -12,6 +12,7 @@ import static org.opensmartgridplatform.dlms.objectconfig.DlmsObjectType.MONTHLY
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,7 +23,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
-import org.joda.time.DateTime;
 import org.openmuc.jdlms.AccessResultCode;
 import org.openmuc.jdlms.AttributeAddress;
 import org.openmuc.jdlms.GetResult;
@@ -102,11 +102,11 @@ public abstract class AbstractPeriodicMeterReadsCommandExecutor<T, R>
           "PeriodicMeterReadsQuery should contain PeriodType, BeginDate and EndDate.");
     }
 
-    final DateTime from =
-        DlmsDateTimeConverter.toDateTime(
+    final ZonedDateTime from =
+        DlmsDateTimeConverter.toZonedDateTime(
             periodicMeterReadsQuery.getBeginDate(), device.getTimezone());
-    final DateTime to =
-        DlmsDateTimeConverter.toDateTime(
+    final ZonedDateTime to =
+        DlmsDateTimeConverter.toZonedDateTime(
             periodicMeterReadsQuery.getEndDate(), device.getTimezone());
 
     // The query can be for 3 different types of values: Interval, daily or monthly.
@@ -240,7 +240,10 @@ public abstract class AbstractPeriodicMeterReadsCommandExecutor<T, R>
         periodicMeterReads.stream()
             .filter(
                 meterRead ->
-                    this.validateDateTime(meterRead.getLogTime(), from.toDate(), to.toDate()))
+                    this.validateDateTime(
+                        meterRead.getLogTime(),
+                        Date.from(from.toInstant()),
+                        Date.from(to.toInstant())))
             .toList();
 
     log.debug("Resulting periodicMeterReads: {} ", periodicMeterReads);
@@ -260,10 +263,11 @@ public abstract class AbstractPeriodicMeterReadsCommandExecutor<T, R>
     final CosemDateTimeDto cosemDateTime =
         this.dlmsHelper.readDateTime(bufferedObject, "Clock from " + periodType + " buffer");
 
-    final DateTime bufferedDateTime = cosemDateTime == null ? null : cosemDateTime.asDateTime();
+    final ZonedDateTime bufferedDateTime =
+        cosemDateTime == null ? null : cosemDateTime.asDateTime();
 
     if (bufferedDateTime != null) {
-      logTime = bufferedDateTime.toDate();
+      logTime = Date.from(bufferedDateTime.toInstant());
     } else {
       logTime =
           this.calculateIntervalTimeBasedOnPreviousValue(
@@ -279,8 +283,8 @@ public abstract class AbstractPeriodicMeterReadsCommandExecutor<T, R>
 
   private AttributeAddress getAttributeAddressForProfile(
       final CosemObject profile,
-      final DateTime from,
-      final DateTime to,
+      final ZonedDateTime from,
+      final ZonedDateTime to,
       final int channel,
       final List<CaptureObject> selectedCaptureObjects,
       final boolean selectValues) {
@@ -341,8 +345,8 @@ public abstract class AbstractPeriodicMeterReadsCommandExecutor<T, R>
 
   private SelectiveAccessDescription getAccessDescription(
       final List<CaptureObject> selectedCaptureObjects,
-      final DateTime from,
-      final DateTime to,
+      final ZonedDateTime from,
+      final ZonedDateTime to,
       final boolean selectValues) {
 
     if (from == null || to == null) {
