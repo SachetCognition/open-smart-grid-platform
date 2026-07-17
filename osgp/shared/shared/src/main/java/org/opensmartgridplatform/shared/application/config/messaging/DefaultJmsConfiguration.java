@@ -58,7 +58,8 @@ public class DefaultJmsConfiguration implements JmsConfiguration {
   @Value("${jms.default.trust.all.packages:false}")
   private boolean jmsDefaultTrustAllPackages;
 
-  @Value("${jms.default.trusted.packages:org.opensmartgridplatform,org.joda.time,java.util}")
+  @Value(
+      "${jms.default.trusted.packages:org.opensmartgridplatform,org.joda.time,java.util,java.lang,java.time,java.net,com.google.protobuf}")
   private String jmsDefaultTrustedPackages;
 
   @Value("${jms.default.broker.client.key.store:/etc/osp/activemq/client.ks}")
