@@ -3,6 +3,14 @@
 
 The release process is responsible for managing our application version. The chosen release strategy is one uniform version for all components.
 
+> **Note** — Version and branch management is handled entirely by the GitHub Actions
+> workflows described below (branch creation, version increment and release tagging). The
+> previously used `jgitflow-maven-plugin` has been removed from the Maven build; there is no
+> longer a local `mvn jgitflow:*` git-flow step. For a local/ad-hoc POM version change use the
+> standard Maven goal `mvn versions:set -DnewVersion=x.y.z -DprocessAllModules=true`
+> (followed by `versions:commit`); the CI release scripts perform the equivalent version bump
+> across the configured repositories.
+
 For major or minor releases:
 * Run create release branch workflow to create a new release branch and increment the version on the development branch
 * Run create final release workflow to create a release tag and trigger a new release build

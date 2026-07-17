@@ -21,7 +21,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
@@ -38,12 +37,12 @@ import org.springframework.validation.beanvalidation.MethodValidationPostProcess
       "org.opensmartgridplatform.adapter.ws.mapping",
       "org.opensmartgridplatform.domain.logging",
     })
-@ImportResource("classpath:applicationContext.xml")
 @Import({
   PersistenceConfigCore.class,
   PersistenceConfigWs.class,
   WritablePersistenceConfigCore.class,
   WebServiceConfig.class,
+  WebServiceEndpointConfig.class,
   CoreWebServiceConfig.class,
   MetricsConfig.class
 })
