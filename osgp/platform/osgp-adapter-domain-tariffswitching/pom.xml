@@ -10,7 +10,8 @@ SPDX-License-Identifier: Apache-2.0
 
   <artifactId>osgp-adapter-domain-tariffswitching</artifactId>
   <name>osgp-adapter-domain-tariffswitching</name>
-  <packaging>war</packaging>
+  <!-- WS6: converted from WAR-in-Tomcat to a self-contained Spring Boot fat jar. -->
+  <packaging>jar</packaging>
   <!-- Description element is needed for the maven-jxr-plugin to generate a maven site -->
   <description>Domain logic module for tariff switching.</description>
 
@@ -23,26 +24,25 @@ SPDX-License-Identifier: Apache-2.0
 
   <properties>
     <display.version>${project.version}-${BUILD_TAG}</display.version>
+    <spring.boot.version>3.5.6</spring.boot.version>
   </properties>
 
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-war-plugin</artifactId>
-        <version>${maven.war.plugin.version}</version>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring.boot.version}</version>
         <configuration>
-          <webappDirectory>${project.build.directory}/gxf/${project.artifactId}</webappDirectory>
-          <attachClasses>true</attachClasses>
-          <failOnMissingWebXml>false</failOnMissingWebXml>
-          <nonFilteredFileExtensions>
-            <nonFilteredFileExtension>gif</nonFilteredFileExtension>
-            <nonFilteredFileExtension>ico</nonFilteredFileExtension>
-            <nonFilteredFileExtension>jpg</nonFilteredFileExtension>
-            <nonFilteredFileExtension>png</nonFilteredFileExtension>
-            <nonFilteredFileExtension>pdf</nonFilteredFileExtension>
-          </nonFilteredFileExtensions>
+          <mainClass>org.opensmartgridplatform.adapter.domain.tariffswitching.DomainTariffSwitchingApplication</mainClass>
         </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -58,7 +58,35 @@ SPDX-License-Identifier: Apache-2.0
     </plugins>
   </build>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring.boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
+
+    <!-- WS6: Spring Boot embedded servlet container + Actuator liveness/readiness probes -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-prometheus</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
 
     <!-- Open Smart Grid Platform -->
     <dependency>

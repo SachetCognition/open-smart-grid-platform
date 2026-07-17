@@ -1,0 +1,56 @@
+# SPDX-FileCopyrightText: Contributors to the GXF project
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# WS6: Cloud-native configuration for the osgp-core Spring Boot application.
+#
+# The Tomcat context.xml JNDI <Environment> entries that used to point the application at its
+# external configuration files have been replaced by the properties below. The values are plain
+# defaults; in Kubernetes they are supplied through a ConfigMap (mounted global.properties) and a
+# Secret (database credentials) - see deploy/. Every value can be overridden with an environment
+# variable, e.g. SERVER_PORT or SPRING_CONFIG_IMPORT.
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: osgp-core
+  # Optionally import external configuration (mounted from a ConfigMap/Secret). Missing files are
+  # ignored so the container also starts with classpath defaults only.
+  config:
+    import:
+      - optional:file:/etc/osgp/global.properties
+      - optional:file:/etc/osgp/osgp-core.properties
+
+# Location of the file-system config files that the @PropertySource annotations reference. These
+# used to be provided as Tomcat JNDI Environment entries in context.xml.
+osgp/Global/config: /etc/osgp/global.properties
+osgp/Core/config: /etc/osgp/osgp-core.properties
+
+# Logback configuration (previously resolved through the osgp/Core/log-config JNDI entry).
+logging:
+  config: classpath:logback-config.xml
+
+# Spring Boot Actuator: expose Kubernetes-style liveness and readiness probes at
+# /actuator/health/liveness and /actuator/health/readiness, plus a Prometheus scrape endpoint.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true

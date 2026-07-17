@@ -1,0 +1,39 @@
+{{/*
+SPDX-FileCopyrightText: Contributors to the GXF project
+
+SPDX-License-Identifier: Apache-2.0
+*/}}
+# Replaces the Tomcat context.xml JNDI <Environment> entries. The application containers mount this
+# ConfigMap at /etc/osgp/global.properties, which the Spring Boot apps pick up via
+# `spring.config.import` (and the legacy @PropertySource file:${osgp/Global/config}).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-global-config
+  labels:
+    {{- include "gxf.labels" . | nindent 4 }}
+data:
+  global.properties: |
+    # ---- Database ----
+    db.host={{ .Values.database.host }}
+    db.port={{ .Values.database.port }}
+    db.username={{ .Values.database.username }}
+    db.driver=org.postgresql.Driver
+    db.protocol=jdbc:postgresql://
+    # ---- JMS / Artemis ----
+    jms.default.broker.url={{ .Values.artemis.brokerUrl }}
+    jms.activemq.broker.url={{ .Values.artemis.brokerUrl }}
+---
+# Database credentials. Injected into the app pods as the DB_PASSWORD environment variable; Spring
+# relaxed binding resolves ${db.password} from it. Provide a real value via --set or an external
+# secret manager in production.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-db-credentials
+  labels:
+    {{- include "gxf.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+  DB_PASSWORD: {{ .Values.database.password | quote }}
+  ARTEMIS_PASSWORD: {{ .Values.artemis.password | quote }}
