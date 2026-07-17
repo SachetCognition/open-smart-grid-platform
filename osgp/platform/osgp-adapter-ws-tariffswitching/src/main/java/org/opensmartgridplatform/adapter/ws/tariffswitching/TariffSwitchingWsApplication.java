@@ -25,6 +25,7 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.ws.transport.http.MessageDispatcherServlet;
 
 /**
@@ -80,12 +81,19 @@ public class TariffSwitchingWsApplication extends SpringBootServletInitializer {
     return builder.sources(TariffSwitchingWsApplication.class);
   }
 
-  /** Registers the Spring-WS SOAP dispatcher servlet on the embedded servlet container. */
+  /**
+   * Registers the Spring-WS SOAP dispatcher servlet on the embedded servlet container. The servlet
+   * is given its own {@link AnnotationConfigWebApplicationContext} whose parent is the Spring Boot
+   * root context. Because the servlet creates and refreshes that child context itself, its {@code
+   * initStrategies()} runs and detects the endpoint mappings, adapters and interceptors declared by
+   * {@code <sws:annotation-driven/>} in the (ancestor) root context. Passing the already-refreshed
+   * root context directly skips {@code initStrategies()}, leaving the dispatcher without endpoint
+   * mappings so every SOAP request fails with a 404.
+   */
   @Bean
-  public ServletRegistrationBean<MessageDispatcherServlet> messageDispatcherServlet(
-      final org.springframework.context.ApplicationContext applicationContext) {
+  public ServletRegistrationBean<MessageDispatcherServlet> messageDispatcherServlet() {
     final MessageDispatcherServlet servlet = new MessageDispatcherServlet();
-    servlet.setApplicationContext(applicationContext);
+    servlet.setContextClass(AnnotationConfigWebApplicationContext.class);
     servlet.setTransformWsdlLocations(true);
     final ServletRegistrationBean<MessageDispatcherServlet> registration =
         new ServletRegistrationBean<>(servlet, "/*");
