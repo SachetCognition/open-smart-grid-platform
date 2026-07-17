@@ -1,0 +1,89 @@
+{{/*
+SPDX-FileCopyrightText: Contributors to the GXF project
+
+SPDX-License-Identifier: Apache-2.0
+
+Deployments + Services for the WS6 Spring Boot converted platform modules. Each container mounts the
+global-config ConfigMap at /etc/osgp, receives the database password from a Secret, and is health
+checked through the Spring Boot Actuator liveness/readiness endpoints.
+*/}}
+{{- range $key, $svc := .Values.services }}
+{{- if $svc.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $svc.name }}
+  labels:
+    app: {{ $svc.name }}
+    {{- include "gxf.labels" $ | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ $svc.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ $svc.name }}
+    spec:
+      containers:
+        - name: {{ $svc.name }}
+          image: {{ include "gxf.image" (dict "root" $ "image" $svc.image) }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ $svc.httpPort }}
+              name: http
+            {{- if ne (int $svc.managementPort) (int $svc.httpPort) }}
+            - containerPort: {{ $svc.managementPort }}
+              name: management
+            {{- end }}
+          env:
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Release.Name }}-db-credentials
+                  key: DB_PASSWORD
+            - name: ARTEMIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Release.Name }}-db-credentials
+                  key: ARTEMIS_PASSWORD
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: {{ $svc.managementPort }}
+            initialDelaySeconds: 60
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: {{ $svc.managementPort }}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            {{- toYaml $.Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: global-config
+              mountPath: /etc/osgp
+              readOnly: true
+      volumes:
+        - name: global-config
+          configMap:
+            name: {{ $.Release.Name }}-global-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $svc.name }}
+  labels:
+    {{- include "gxf.labels" $ | nindent 4 }}
+spec:
+  selector:
+    app: {{ $svc.name }}
+  ports:
+    - port: {{ $svc.httpPort }}
+      targetPort: {{ $svc.httpPort }}
+      name: http
+{{- end }}
+{{- end }}

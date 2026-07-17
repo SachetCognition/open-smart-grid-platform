@@ -24,10 +24,29 @@ SPDX-License-Identifier: Apache-2.0
 
   <properties>
     <display.version>${project.version}-${BUILD_TAG}</display.version>
+    <spring.boot.version>3.5.6</spring.boot.version>
   </properties>
 
   <build>
     <plugins>
+      <!-- WS6: repackage the WAR into a self-contained, executable Spring Boot artifact with an
+           embedded servlet container, while keeping WAR packaging so it can still be deployed to an
+           external servlet container if required. -->
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring.boot.version}</version>
+        <configuration>
+          <mainClass>org.opensmartgridplatform.adapter.ws.tariffswitching.TariffSwitchingWsApplication</mainClass>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
@@ -43,12 +62,6 @@ SPDX-License-Identifier: Apache-2.0
             <nonFilteredFileExtension>png</nonFilteredFileExtension>
             <nonFilteredFileExtension>pdf</nonFilteredFileExtension>
           </nonFilteredFileExtensions>
-          <webResources>
-            <resource>
-              <directory>src/main/webapp</directory>
-              <filtering>true</filtering>
-            </resource>
-          </webResources>
         </configuration>
       </plugin>
       <plugin>
@@ -65,7 +78,41 @@ SPDX-License-Identifier: Apache-2.0
     </plugins>
   </build>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring.boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
+    <!-- WS6: Spring Boot embedded servlet container + Actuator liveness/readiness probes. The
+         embedded Tomcat is 'provided' so the WAR stays deployable to an external container, while
+         the repackaged executable WAR still runs standalone with 'java -jar'. -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-tomcat</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-prometheus</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
     <!-- Open Smart Grid Platform -->
     <dependency>
       <groupId>org.opensmartgridplatform</groupId>
