@@ -34,12 +34,14 @@ import static org.opensmartgridplatform.shared.application.config.messaging.JmsP
 import static org.opensmartgridplatform.shared.application.config.messaging.JmsPropertyNames.PROPERTY_NAME_QUEUE;
 import static org.opensmartgridplatform.shared.application.config.messaging.JmsPropertyNames.PROPERTY_NAME_REDELIVERY_DELAY;
 import static org.opensmartgridplatform.shared.application.config.messaging.JmsPropertyNames.PROPERTY_NAME_TIME_TO_LIVE;
+import static org.opensmartgridplatform.shared.application.config.messaging.JmsPropertyNames.PROPERTY_NAME_TRUSTED_PACKAGES;
 import static org.opensmartgridplatform.shared.application.config.messaging.JmsPropertyNames.PROPERTY_NAME_TRUST_ALL_PACKAGES;
 import static org.opensmartgridplatform.shared.application.config.messaging.JmsPropertyNames.PROPERTY_NAME_USE_EXPONENTIAL_BACK_OFF;
 
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.Destination;
 import jakarta.jms.MessageListener;
+import java.util.List;
 import java.util.Map;
 import javax.net.ssl.SSLException;
 import org.apache.activemq.ActiveMQSslConnectionFactory;
@@ -59,6 +61,9 @@ import org.springframework.jms.listener.DefaultMessageListenerContainer;
 
 @ExtendWith(MockitoExtension.class)
 class JmsConfigurationFactoryTest {
+
+  private static final String TRUSTED_PACKAGES =
+      "org.opensmartgridplatform,org.joda.time,java.util";
 
   @Mock private Environment environment;
   @Mock private DefaultJmsConfiguration defaultJmsConfiguration;
@@ -153,8 +158,18 @@ class JmsConfigurationFactoryTest {
 
     if (jmsBrokerType == JmsBrokerType.ARTEMIS) {
       assertThat(consumerConnectionFactory).isInstanceOf(ActiveMQConnectionFactory.class);
+      // trustAllPackages=false wires the trusted packages into the Artemis deserialization
+      // whitelist to guard against unbounded ObjectMessage deserialization.
+      assertThat(
+              ((ActiveMQConnectionFactory) consumerConnectionFactory).getDeserializationWhiteList())
+          .isEqualTo(TRUSTED_PACKAGES);
     } else if (jmsBrokerType == JmsBrokerType.ACTIVE_MQ) {
       assertThat(consumerConnectionFactory).isInstanceOf(ActiveMQSslConnectionFactory.class);
+      final ActiveMQSslConnectionFactory activeMq =
+          (ActiveMQSslConnectionFactory) consumerConnectionFactory;
+      assertThat(activeMq.isTrustAllPackages()).isFalse();
+      assertThat(activeMq.getTrustedPackages())
+          .isEqualTo(List.of("org.opensmartgridplatform", "org.joda.time", "java.util"));
     }
   }
 
@@ -363,6 +378,12 @@ class JmsConfigurationFactoryTest {
     when(this.environment.getProperty(
             this.propertyPrefix + "." + PROPERTY_NAME_MAX_THREAD_POOL_SIZE, int.class))
         .thenReturn(3);
+    when(this.environment.getProperty(
+            this.propertyPrefix + "." + PROPERTY_NAME_TRUST_ALL_PACKAGES, boolean.class))
+        .thenReturn(false);
+    when(this.environment.getProperty(
+            this.propertyPrefix + "." + PROPERTY_NAME_TRUSTED_PACKAGES, String.class))
+        .thenReturn(TRUSTED_PACKAGES);
 
     when(this.environment.getProperty(
             this.propertyPrefix + "." + PROPERTY_NAME_BROKER_USERNAME, String.class))
@@ -384,7 +405,10 @@ class JmsConfigurationFactoryTest {
         .thenReturn(2);
     when(this.environment.getProperty(
             this.propertyPrefix + "." + PROPERTY_NAME_TRUST_ALL_PACKAGES, boolean.class))
-        .thenReturn(true);
+        .thenReturn(false);
+    when(this.environment.getProperty(
+            this.propertyPrefix + "." + PROPERTY_NAME_TRUSTED_PACKAGES, String.class))
+        .thenReturn(TRUSTED_PACKAGES);
     when(this.environment.getProperty(
             this.propertyPrefix + "." + PROPERTY_NAME_MAX_THREAD_POOL_SIZE, int.class))
         .thenReturn(3);

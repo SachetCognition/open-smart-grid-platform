@@ -10,10 +10,14 @@ import org.springframework.beans.factory.annotation.Value;
 
 public class DefaultProtocolJmsConfiguration implements JmsConfiguration {
 
-  @Value("${jms.protocol.default.broker.type:ACTIVE_MQ}")
+  // Default broker type is ARTEMIS. For rollback to ActiveMQ Classic set
+  // jms.protocol.default.broker.type=ACTIVE_MQ (and use a classic failover: broker url).
+  @Value("${jms.protocol.default.broker.type:ARTEMIS}")
   private String jmsDefaultBrokerType;
 
-  @Value("${jms.protocol.default.broker.url:failover:(ssl://localhost:61617)}")
+  // Artemis core broker url (default). ActiveMQ Classic rollback alternative:
+  // failover:(ssl://localhost:61617) or failover:(tcp://localhost:61616)
+  @Value("${jms.protocol.default.broker.url:tcp://localhost:61617}")
   private String jmsDefaultBrokerUrl;
 
   @Value("${jms.protocol.default.queue:osgp-default-domain}")
@@ -52,7 +56,7 @@ public class DefaultProtocolJmsConfiguration implements JmsConfiguration {
   @Value("${jms.protocol.default.connection.send.timeout:0}")
   private int jmsDefaultConnectionSendTimeout;
 
-  @Value("${jms.protocol.default.trust.all.packages:true}")
+  @Value("${jms.protocol.default.trust.all.packages:false}")
   private boolean jmsDefaultTrustAllPackages;
 
   @Value(
