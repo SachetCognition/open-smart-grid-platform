@@ -17,6 +17,7 @@ variables so the same UI runs against k3d port-forwards or any other host.
 from __future__ import annotations
 
 import os
+import urllib.parse
 from pathlib import Path
 
 import httpx
@@ -41,6 +42,8 @@ SOAP_SM_URL = os.environ.get(
     "https://localhost:18443/osgp-adapter-ws-smartmetering/smartmetering/monitoringService/",
 )
 ORG_ID = os.environ.get("ORG_ID", "test-org")
+USER_NAME = os.environ.get("USER_NAME", "test-org")
+APPLICATION_NAME = os.environ.get("APPLICATION_NAME", "GXF-Journeys-UI")
 CLIENT_CERT = os.environ.get("CLIENT_CERT", "/home/ubuntu/ui-certs/test-org-cert.pem")
 CLIENT_KEY = os.environ.get("CLIENT_KEY", "/home/ubuntu/ui-certs/test-org-key.pem")
 
@@ -57,6 +60,23 @@ ACTUATOR_TARGETS = {
 
 PL_NS = "http://www.opensmartgridplatform.org/schemas/publiclighting/adhocmanagement/2014/10"
 SM_NS = "http://www.opensmartgridplatform.org/schemas/smartmetering/sm-monitoring/2014/10"
+COMMON_NS = "http://www.opensmartgridplatform.org/schemas/common"
+
+
+def _soap_header() -> str:
+    """OSGP common SOAP header carrying the organisation/user/application identity.
+
+    The endpoint interceptors read these three elements from the common schema
+    namespace; mTLS authenticates the organisation, these headers authorise it.
+    """
+    return (
+        f'<common:OrganisationIdentification xmlns:common="{COMMON_NS}">{ORG_ID}'
+        "</common:OrganisationIdentification>"
+        f'<common:UserName xmlns:common="{COMMON_NS}">{USER_NAME}</common:UserName>'
+        f'<common:ApplicationName xmlns:common="{COMMON_NS}">{APPLICATION_NAME}'
+        "</common:ApplicationName>"
+    )
+
 
 app = FastAPI(title="GXF Journeys UI", version="1.0")
 
@@ -87,7 +107,8 @@ def rest_enqueue(req: MeterReadRequest):
 def rest_result(correlation_uid: str):
     with httpx.Client(timeout=30.0) as client:
         r = client.get(
-            f"{SM_REST_BASE}/smartmetering/monitoring/actual-meter-reads/{correlation_uid}",
+            f"{SM_REST_BASE}/smartmetering/monitoring/actual-meter-reads/"
+            f"{urllib.parse.quote(correlation_uid, safe='')}",
             headers={"OrganisationIdentification": ORG_ID},
         )
     return JSONResponse(status_code=r.status_code, content=_safe_json(r))
@@ -107,7 +128,7 @@ class SetLightRequest(BaseModel):
 def soap_set_light(req: SetLightRequest):
     dim = f"<ns:DimValue>{req.dimValue}</ns:DimValue>" if req.dimValue is not None else ""
     body = f"""<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="{PL_NS}">
-  <soap:Header><ns:OrganisationIdentification>{ORG_ID}</ns:OrganisationIdentification></soap:Header>
+  <soap:Header>{_soap_header()}</soap:Header>
   <soap:Body>
     <ns:SetLightRequest>
       <ns:DeviceIdentification>{req.deviceIdentification}</ns:DeviceIdentification>
@@ -132,7 +153,7 @@ class SoapMeterReadRequest(BaseModel):
 @app.post("/api/soap/actual-meter-reads")
 def soap_actual_meter_reads(req: SoapMeterReadRequest):
     body = f"""<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="{SM_NS}">
-  <soap:Header><ns:OrganisationIdentification>{ORG_ID}</ns:OrganisationIdentification></soap:Header>
+  <soap:Header>{_soap_header()}</soap:Header>
   <soap:Body>
     <ns:ActualMeterReadsRequest>
       <ns:DeviceIdentification>{req.deviceIdentification}</ns:DeviceIdentification>
@@ -188,6 +209,8 @@ def config():
     return {
         "organisation": ORG_ID,
         "restBase": SM_REST_BASE,
+        "userName": USER_NAME,
+        "applicationName": APPLICATION_NAME,
         "soapPublicLighting": SOAP_PL_URL,
         "soapSmartMetering": SOAP_SM_URL,
         "actuatorTargets": list(ACTUATOR_TARGETS.keys()),

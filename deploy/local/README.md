@@ -113,9 +113,17 @@ The CI `cucumber` flow is reproduced with the test-suite chart:
 ./charts/gxf-cucumber-tests/template-apply.sh --valuesFile ci/publiclighting-values.yaml
 ```
 
-Each run is a Kubernetes Job; `STATUS=Complete` means the failsafe build
-exited 0 (all scenarios passed). Reports are written to the `report-volume`
-PVC (Cucumber HTML/JSON/JUnit XML).
+Each run is a Kubernetes Job. Do **not** rely on `STATUS=Complete` alone as
+proof of a green suite — inspect the authoritative `cucumber.json` written to
+the `report-volume` PVC (Cucumber HTML/JSON/JUnit XML). Verified result for the
+reconverged stack:
+
+> **platform / publiclighting: 456 / 456 scenarios passed, 0 failed (2217 steps)**
+> — covering `SetLight`, `SetLightSchedule`, `GetTariffStatus`,
+> `Set/ReverseTariffSchedule`, `AuthorizeDeviceFunctions`, OSLP
+> registration/events, and core/firmware/config management.
+
+See `test-report.md` (this directory) for the tallied breakdown and screenshots.
 
 Alternatively, from a machine with network access to the stack and the org
 client certs configured:
@@ -152,8 +160,12 @@ UI_CERTS_DIR=/path/to/org-certs ./run.sh      # http://localhost:8500
 The UI drives three journeys and a live Actuator health dashboard:
 
 1. **Smart Metering GetActualMeterReads (REST/JSON, WS3)** — POST returns
-   HTTP 202 + `correlationUid`; GET returns 200 with the result or 202
-   `PENDING`.
+   HTTP 202 + `correlationUid`; GET-by-correlationUid returns 202 `PENDING`
+   while no result exists, and the async domain result once processed (see
+   the DLMS limitation in §10 for why the resolved value is `NOT_OK` locally).
+   Swagger UI: open `/rest/swagger-ui/index.html` and point the Explore box at
+   `/osgp-adapter-ws-smartmetering/rest/v3/api-docs` (springdoc's auto config
+   URL omits the `/rest` servlet prefix — minor WS3 follow-up).
 2. **Public Lighting SetLight (SOAP, mTLS)** — the preserved SOAP endpoint.
 3. **Smart Metering GetActualMeterReads (SOAP, mTLS)** — the preserved SOAP
    endpoint, side-by-side with REST.
@@ -188,13 +200,17 @@ Point `run.sh` at that directory with `UI_CERTS_DIR`.
 
 ## 10. Known limitations
 
-* **Smart-metering DLMS chain.** `GetActualMeterReads` over SOAP/REST completes
-  end-to-end only when the full DLMS chain (domain-smartmetering +
-  protocol-adapter-dlms + DLMS device simulator) is deployed and a smart-meter
-  device is provisioned. The recon deployment focuses on the messaging/broker,
-  REST facade, public-lighting `SetLight` (validated end-to-end via Cucumber)
-  and Actuator/health surfaces; where the DLMS chain is not deployed the REST
-  GET correctly returns `202 PENDING`.
+* **Smart-metering DLMS chain.** `GetActualMeterReads` over SOAP/REST returns a
+  completed meter-read *value* only when the full DLMS chain
+  (domain-smartmetering + protocol-adapter-dlms + DLMS device simulator) is
+  deployed and a smart-meter device is provisioned. The `gxf-gitops` local
+  variant does not package the DLMS-specific datasource/secret or a simulated
+  meter, so the enqueue → correlationUid → poll **contract is fully exercised**
+  (POST 202 + correlationUid, GET 202 `PENDING`) but the resolved async result
+  is `NOT_OK` (surfaced as HTTP 500 on the REST GET / a SOAP fault). Public
+  lighting completes end-to-end via the OSLP web-device-simulator (proven by
+  Cucumber 456/456). A completed smart-meter value is therefore **not** claimed
+  for this local deployment.
 * **WS6 scope.** Three representative modules were converted to Spring Boot
   executables. `httpd` still proxies SOAP to the non-converted adapters over
   AJP; the converted `osgp-adapter-ws-tariffswitching` exposes HTTP/Actuator
