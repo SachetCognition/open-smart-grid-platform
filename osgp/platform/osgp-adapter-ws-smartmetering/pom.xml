@@ -24,6 +24,8 @@ SPDX-License-Identifier: Apache-2.0
 
   <properties>
     <display.version>${project.version}-${BUILD_TAG}</display.version>
+    <!-- REST/OpenAPI facade (WS3). springdoc is not managed in super/pom.xml; pin here. -->
+    <springdoc.version>2.8.9</springdoc.version>
   </properties>
 
   <build>
@@ -141,6 +143,28 @@ SPDX-License-Identifier: Apache-2.0
     <dependency>
       <groupId>org.springframework.ws</groupId>
       <artifactId>spring-ws-support</artifactId>
+    </dependency>
+
+    <!-- Spring MVC + REST/JSON facade (additive to SOAP) -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-webmvc</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+
+    <!-- OpenAPI / Swagger UI (springdoc-openapi) -->
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+      <version>${springdoc.version}</version>
     </dependency>
 
     <!-- Joda Time (Date/Time util) -->
@@ -266,6 +290,18 @@ SPDX-License-Identifier: Apache-2.0
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest</artifactId>
+      <version>2.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.jayway.jsonpath</groupId>
+      <artifactId>json-path</artifactId>
+      <version>2.9.0</version>
       <scope>test</scope>
     </dependency>
 
