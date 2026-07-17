@@ -22,4 +22,6 @@ EXPOSE 8080 8081
 HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
     CMD curl -fsS http://localhost:8081/actuator/health/readiness || exit 1
 
-ENTRYPOINT ["java", "-jar", "/app/app.war"]
+# Honour $JAVA_OPTS (memory/GC settings from the deployment) and open java.base/java.lang for the
+# Orika object mapper's runtime bytecode generation (required on JDK 17+).
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS --add-opens java.base/java.lang=ALL-UNNAMED -jar /app/app.war"]

@@ -8,8 +8,10 @@ import java.util.TimeZone;
 import org.opensmartgridplatform.adapter.ws.tariffswitching.application.config.ApplicationContext;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.actuate.autoconfigure.metrics.jdbc.DataSourcePoolMetricsAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
@@ -22,6 +24,7 @@ import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.ws.transport.http.MessageDispatcherServlet;
 
 /**
@@ -47,7 +50,9 @@ import org.springframework.ws.transport.http.MessageDispatcherServlet;
       ActiveMQAutoConfiguration.class,
       ArtemisAutoConfiguration.class,
       SecurityAutoConfiguration.class,
-      ManagementWebSecurityAutoConfiguration.class
+      ManagementWebSecurityAutoConfiguration.class,
+      PropertyPlaceholderAutoConfiguration.class,
+      DataSourcePoolMetricsAutoConfiguration.class
     })
 @Import(ApplicationContext.class)
 public class TariffSwitchingWsApplication extends SpringBootServletInitializer {
@@ -55,6 +60,18 @@ public class TariffSwitchingWsApplication extends SpringBootServletInitializer {
   public static void main(final String[] args) {
     TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
     SpringApplication.run(TariffSwitchingWsApplication.class, args);
+  }
+
+  /**
+   * Lenient placeholder resolver matching the original Tomcat behaviour: unresolved placeholders
+   * are left untouched instead of failing application startup.
+   */
+  @Bean
+  static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+    final PropertySourcesPlaceholderConfigurer configurer =
+        new PropertySourcesPlaceholderConfigurer();
+    configurer.setIgnoreUnresolvablePlaceholders(true);
+    return configurer;
   }
 
   @Override

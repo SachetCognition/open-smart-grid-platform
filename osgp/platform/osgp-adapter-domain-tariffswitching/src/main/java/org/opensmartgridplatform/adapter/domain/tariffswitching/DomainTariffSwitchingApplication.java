@@ -8,8 +8,10 @@ import java.util.TimeZone;
 import org.opensmartgridplatform.adapter.domain.tariffswitching.application.config.ApplicationContext;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.actuate.autoconfigure.metrics.jdbc.DataSourcePoolMetricsAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
 import org.springframework.boot.autoconfigure.jms.activemq.ActiveMQAutoConfiguration;
@@ -18,7 +20,9 @@ import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfigurat
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 /**
  * Spring Boot entry point for the tariff switching domain adapter.
@@ -39,7 +43,9 @@ import org.springframework.context.annotation.Import;
       ActiveMQAutoConfiguration.class,
       ArtemisAutoConfiguration.class,
       SecurityAutoConfiguration.class,
-      ManagementWebSecurityAutoConfiguration.class
+      ManagementWebSecurityAutoConfiguration.class,
+      PropertyPlaceholderAutoConfiguration.class,
+      DataSourcePoolMetricsAutoConfiguration.class
     })
 @Import(ApplicationContext.class)
 public class DomainTariffSwitchingApplication extends SpringBootServletInitializer {
@@ -47,6 +53,18 @@ public class DomainTariffSwitchingApplication extends SpringBootServletInitializ
   public static void main(final String[] args) {
     TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
     SpringApplication.run(DomainTariffSwitchingApplication.class, args);
+  }
+
+  /**
+   * Lenient placeholder resolver matching the original Tomcat behaviour: unresolved placeholders
+   * are left untouched instead of failing application startup.
+   */
+  @Bean
+  static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+    final PropertySourcesPlaceholderConfigurer configurer =
+        new PropertySourcesPlaceholderConfigurer();
+    configurer.setIgnoreUnresolvablePlaceholders(true);
+    return configurer;
   }
 
   @Override

@@ -18,6 +18,10 @@ server:
 spring:
   application:
     name: osgp-adapter-ws-tariffswitching
+  # The hand-rolled WebServiceConfig and Spring-WS's DelegatingWsConfiguration both contribute a
+  # defaultMethodEndpointAdapter bean; overriding was permitted under Tomcat, so keep it enabled.
+  main:
+    allow-bean-definition-overriding: true
   config:
     import:
       - optional:file:/etc/osgp/global.properties
