@@ -4,27 +4,32 @@
 
 package org.opensmartgridplatform.adapter.ws.core.application.config;
 
-import java.util.List;
 import org.opensmartgridplatform.adapter.ws.endpointinterceptors.CertificateAndSoapHeaderAuthorizationEndpointInterceptor;
 import org.opensmartgridplatform.adapter.ws.endpointinterceptors.SoapHeaderEndpointInterceptor;
 import org.opensmartgridplatform.adapter.ws.endpointinterceptors.SoapHeaderInterceptor;
 import org.opensmartgridplatform.adapter.ws.endpointinterceptors.WebServiceMonitorInterceptor;
 import org.opensmartgridplatform.adapter.ws.endpointinterceptors.X509CertificateRdnAttributeValueEndpointInterceptor;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.ws.config.annotation.EnableWs;
-import org.springframework.ws.config.annotation.WsConfigurerAdapter;
 import org.springframework.ws.server.EndpointInterceptor;
+import org.springframework.ws.server.endpoint.mapping.PayloadRootAnnotationMethodEndpointMapping;
 import org.springframework.ws.soap.server.endpoint.interceptor.PayloadValidatingInterceptor;
 
 /**
- * Java configuration replacing the former {@code applicationContext.xml}. It enables annotation
- * driven Spring Web Services support (equivalent to {@code <sws:annotation-driven/>}) and registers
- * the endpoint interceptors (equivalent to {@code <sws:interceptors>}) in the same order.
+ * Java configuration replacing the former {@code applicationContext.xml}. It registers the
+ * annotation driven {@link PayloadRootAnnotationMethodEndpointMapping} together with the endpoint
+ * interceptors (equivalent to {@code <sws:annotation-driven/>} plus {@code <sws:interceptors>} in
+ * the same order).
+ *
+ * <p>Note: {@code @EnableWs} is intentionally not used here. It would register an additional default
+ * {@code defaultMethodEndpointAdapter} without the OSGP JAXB {@code MarshallingPayloadMethodProcessor}
+ * beans, which can shadow the adapter defined in {@link WebServiceConfig} and cause "No adapter for
+ * endpoint" errors. Declaring the endpoint mapping explicitly keeps {@link WebServiceConfig}'s
+ * adapter authoritative, exactly as the original XML did.
  */
-@EnableWs
 @Configuration
-public class WebServiceEndpointConfig extends WsConfigurerAdapter {
+public class WebServiceEndpointConfig {
 
   private final X509CertificateRdnAttributeValueEndpointInterceptor
       x509CertificateSubjectCnEndpointInterceptor;
@@ -59,13 +64,20 @@ public class WebServiceEndpointConfig extends WsConfigurerAdapter {
     this.webServiceMonitorInterceptor = webServiceMonitorInterceptor;
   }
 
-  @Override
-  public void addInterceptors(final List<EndpointInterceptor> interceptors) {
-    interceptors.add(this.x509CertificateSubjectCnEndpointInterceptor);
-    interceptors.add(this.organisationIdentificationInterceptor);
-    interceptors.add(this.messagePriorityInterceptor);
-    interceptors.add(this.organisationIdentificationInCertificateCnEndpointInterceptor);
-    interceptors.add(this.payloadValidatingInterceptor);
-    interceptors.add(this.webServiceMonitorInterceptor);
+  @Bean
+  public PayloadRootAnnotationMethodEndpointMapping payloadRootAnnotationMethodEndpointMapping() {
+    final PayloadRootAnnotationMethodEndpointMapping mapping =
+        new PayloadRootAnnotationMethodEndpointMapping();
+    mapping.setInterceptors(
+        new EndpointInterceptor[] {
+          this.x509CertificateSubjectCnEndpointInterceptor,
+          this.organisationIdentificationInterceptor,
+          this.messagePriorityInterceptor,
+          this.organisationIdentificationInCertificateCnEndpointInterceptor,
+          this.payloadValidatingInterceptor,
+          this.webServiceMonitorInterceptor
+        });
+    mapping.setOrder(0);
+    return mapping;
   }
 }
